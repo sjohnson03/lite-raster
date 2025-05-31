@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "output.h"
+#include "triangle.h"
 #include <stdlib.h>
 #include <vector>
 

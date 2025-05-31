@@ -5,6 +5,26 @@ struct float2
 {
     float x, y;
     float2(float x, float y) : x(x), y(y) {}
+
+    float2 operator-(const float2 &other) const
+    {
+        return float2(x - other.x, y - other.y);
+    }
+
+    float2 operator+(const float2 &other) const
+    {
+        return float2(x + other.x, y + other.y);
+    };
+
+    float dot(const float2 &other) const
+    {
+        return x * other.x + y * other.y;
+    };
+
+    float2 perpendicular() const
+    {
+        return float2(-y, x);
+    };
 };
 
 struct float3
