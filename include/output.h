@@ -2,11 +2,8 @@
 #define OUTPUTS_H
 
 #include "types.h"
-#include <stdio.h>
-#include <iostream>
 #include <fstream>
 #include <vector>
-#include <math.h>
 
 struct BMPFileHeader
 {
