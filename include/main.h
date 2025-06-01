@@ -3,7 +3,8 @@
 
 #include "types.h"
 #include "output.h"
-#include "triangle.h"
+#include "triangle/triangle.h"
+#include "scene.h"
 #include <vector>
 
 int main();
