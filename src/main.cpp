@@ -5,9 +5,6 @@ int main()
     int width = 200;
     int height = 200;
     // screen space is from [-1, 1] for both width and height
-
-    // Initialize pixel grid with black pixels
-    std::vector<std::vector<Pixel>> pixels(height, std::vector<Pixel>(width));
     Scene scene = Scene();
 
     Object cube("example/cube.obj");
@@ -17,8 +14,12 @@ int main()
 
     std::vector<Triangle> triangles;
 
-    for (int frames = 0; frames < 30; frames++)
+    for (int frames = 0; frames < 61; frames++)
     {
+        auto start = std::chrono::high_resolution_clock::now();
+
+        std::vector<std::vector<Pixel>> pixels(height, std::vector<Pixel>(width)); // clear the pixel buffer
+        triangles.clear();                                                         // clear all triangles
 
         for (unsigned long i = 0; i < scene.objects.size(); i++) // project all triangles
         {
@@ -34,17 +35,19 @@ int main()
             }
         }
 
-        // TODO - Move this to scene class
-        for (int y = 0; y < height; ++y)
+        // actual render loop - TODO - move this to scene class
+        for (const Triangle &triangle : triangles)
         {
-            for (int x = 0; x < width; ++x)
-            {
-                float2 point = float2(x, y);
-                // set each pixel individually
+            // only draw where triangles actually are
+            auto [minX, maxX, minY, maxY] = triangle.getBoundingBox(width, height);
 
-                for (unsigned long i = 0; i < triangles.size(); i++)
+            for (int y = minY; y <= maxY; ++y)
+            {
+                for (int x = minX; x <= maxX; ++x)
                 {
-                    Triangle triangle = triangles[i];
+                    float2 point = float2(x, y);
+                    // set each pixel individually
+
                     if (triangle.isPointInsideTriangle(point))
                     {
                         pixels[y][x] = Pixel(triangle.getColour());
@@ -58,6 +61,11 @@ int main()
         bmpWriter.writePixelData(pixels);
 
         cube.setRotation(float3(0.0f, 2 * frames, 0.0f));
+
+        auto stop = std::chrono::high_resolution_clock::now();
+
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+        std::cout << "Frame " << frames << " rendered in " << duration.count() << " ms" << std::endl; // measure time to render each frame
     }
 
     return 0;

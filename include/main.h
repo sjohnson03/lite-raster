@@ -6,6 +6,7 @@
 #include "triangle/triangle.h"
 #include "scene.h"
 #include <vector>
+#include <chrono>
 
 int main();
 

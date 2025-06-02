@@ -13,14 +13,15 @@ public:
     float2 A, B, C;    // points of the triangle in 2D
     float2 AB, AC, BC; // vectors connecting the triangle
 
-    bool isPointInsideTriangle(const float2 &point);
+    bool isPointInsideTriangle(const float2 &point) const;
+    std::tuple<int, int, int, int> getBoundingBox(int width, int height) const;
 
     void setColour(Colour colour);
-    Colour getColour();
+    Colour getColour() const;
 
 private:
     Colour colour;
-    bool edgeFunction(const float2 &a, const float2 &b, const float2 &c);
+    bool edgeFunction(const float2 &a, const float2 &b, const float2 &c) const;
 };
 
 #endif
