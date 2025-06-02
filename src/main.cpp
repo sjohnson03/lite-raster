@@ -2,8 +2,8 @@
 
 int main()
 {
-    int width = 200;
-    int height = 200;
+    int width = 640;
+    int height = 360;
     // screen space is from [-1, 1] for both width and height
     Scene scene = Scene();
 
