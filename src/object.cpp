@@ -4,6 +4,10 @@ Object::Object(std::string path)
 {
     auto result = loadFromFile(path);
     initFromVectors(result.first, result.second);
+
+    transform = float3(0.f, 0.f, 0.f);
+    rotation = float3(0.f, 0.f, 0.f);
+    scale = float3(1.0f, 1.0f, 1.0f);
 }
 
 void Object::initFromVectors(const std::vector<float3> &points, const std::vector<float3> &faces)
@@ -17,6 +21,8 @@ void Object::initFromVectors(const std::vector<float3> &points, const std::vecto
         Triangle3D *tri = new Triangle3D(v0, v1, v2);
         triangles.push_back(tri);
     }
+
+    originalTriangles = triangles;
 }
 
 Object::~Object()
@@ -69,4 +75,113 @@ std::pair<std::vector<float3>, std::vector<float3>> Object::loadFromFile(std::st
         file.close();
     }
     return result;
+}
+
+void Object::setTransform(float3 position)
+{
+    transform = position;
+
+    updateTransformedTriangles();
+}
+
+float3 Object::getTransform()
+{
+    return transform;
+}
+
+void Object::setRotation(float3 rotationDegrees)
+{
+    // convert rotation to radians
+    rotation.x = rotationDegrees.x * M_PI / 180.0f;
+    rotation.y = rotationDegrees.y * M_PI / 180.0f;
+    rotation.z = rotationDegrees.z * M_PI / 180.0f;
+
+    updateTransformedTriangles();
+}
+
+float3 Object::getRotation()
+{
+    return rotation;
+}
+
+void Object::setScale(float3 scale)
+{
+    this->scale = scale;
+
+    updateTransformedTriangles();
+}
+
+float3 Object::getScale()
+{
+    return scale;
+}
+
+void Object::updateTransformedTriangles()
+{
+    triangles.clear();
+
+    for (Triangle3D *tri : originalTriangles)
+    {
+        // Clone triangle vertices
+        float3 A = tri->A;
+        float3 B = tri->B;
+        float3 C = tri->C;
+
+        // Scale
+        A = A * scale;
+        B = B * scale;
+        C = C * scale;
+
+        // Rotate (around origin)
+        A = rotateX(A, rotation.x);
+        A = rotateY(A, rotation.y);
+        A = rotateZ(A, rotation.z);
+
+        B = rotateX(B, rotation.x);
+        B = rotateY(B, rotation.y);
+        B = rotateZ(B, rotation.z);
+
+        C = rotateX(C, rotation.x);
+        C = rotateY(C, rotation.y);
+        C = rotateZ(C, rotation.z);
+
+        // Translate
+        A = A + transform;
+        B = B + transform;
+        C = C + transform;
+
+        Triangle3D *newTri = new Triangle3D(A, B, C);
+        newTri->colour = tri->colour;
+        triangles.push_back(newTri);
+    }
+}
+
+float3 Object::rotateX(const float3 &v, float angle)
+{
+    float cosA = cos(angle);
+    float sinA = sin(angle);
+    return float3(
+        v.x,
+        v.y * cosA - v.z * sinA,
+        v.y * sinA + v.z * cosA);
+}
+
+float3 Object::rotateY(const float3 &v, float angle)
+{
+    float cosA = cos(angle);
+    float sinA = sin(angle);
+    return float3(
+        v.x * cosA + v.z * sinA,
+        v.y,
+        -v.x * sinA + v.z * cosA);
+}
+
+float3 Object::rotateZ(const float3 &v, float angle)
+{
+    float cosA = cos(angle);
+    float sinA = sin(angle);
+    return float3(
+        v.x * cosA - v.y * sinA,
+        v.x * sinA + v.y * cosA,
+        v.z);
 }

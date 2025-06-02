@@ -1,6 +1,6 @@
 #include "output.h"
 
-BmpWriter::BmpWriter() : outputStream("out.bmp", std::ios::out | std::ios::binary)
+BmpWriter::BmpWriter(const std::string &filename) : outputStream(filename, std::ios::out | std::ios::binary)
 {
     if (!outputStream)
     {

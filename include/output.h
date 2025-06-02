@@ -32,7 +32,7 @@ struct BMPInfoHeader
 class BmpWriter
 {
 public:
-    BmpWriter();
+    BmpWriter(const std::string &filename);
     ~BmpWriter();
 
     void write(u_int16_t data, size_t size);

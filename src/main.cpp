@@ -11,54 +11,54 @@ int main()
     Scene scene = Scene();
 
     Object cube("example/cube.obj");
+    cube.setScale(float3(0.5f, 0.5f, 0.5f));
+
     scene.add(cube);
 
     std::vector<Triangle> triangles;
 
-    // Render loop
-
-    for (unsigned long i = 0; i < scene.objects.size(); i++) // project all triangles
+    for (int frames = 0; frames < 30; frames++)
     {
-        Object *object = scene.objects[i].first;
-        if (object)
+
+        for (unsigned long i = 0; i < scene.objects.size(); i++) // project all triangles
         {
-            for (unsigned long j = 0; j < object->triangles.size(); j++)
+            Object *object = scene.objects[i].first;
+            if (object)
             {
-                Triangle triangle = object->triangles[j]->projectTo2D(width, height);
-
-                triangles.push_back(triangle);
-
-                std::cout
-                    << "Triangle vertices: "
-                    << "(" << triangle.A.x << ", " << triangle.A.y << "), "
-                    << "(" << triangle.B.x << ", " << triangle.B.y << "), "
-                    << "(" << triangle.C.x << ", " << triangle.C.y << ")" << std::endl;
-            }
-        }
-    }
-
-    // TODO - Move this to scene class
-    for (int y = 0; y < height; ++y)
-    {
-        for (int x = 0; x < width; ++x)
-        {
-            float2 point = float2(x, y);
-            // set each pixel individually
-
-            for (unsigned long i = 0; i < triangles.size(); i++)
-            {
-                Triangle triangle = triangles[i];
-                if (triangle.isPointInsideTriangle(point))
+                for (unsigned long j = 0; j < object->triangles.size(); j++)
                 {
-                    pixels[y][x] = Pixel(triangle.getColour());
+                    Triangle triangle = object->triangles[j]->projectTo2D(width, height);
+
+                    triangles.push_back(triangle);
                 }
             }
         }
-    }
 
-    BmpWriter bmpWriter;
-    bmpWriter.writeHeader(width, height);
-    bmpWriter.writePixelData(pixels);
+        // TODO - Move this to scene class
+        for (int y = 0; y < height; ++y)
+        {
+            for (int x = 0; x < width; ++x)
+            {
+                float2 point = float2(x, y);
+                // set each pixel individually
+
+                for (unsigned long i = 0; i < triangles.size(); i++)
+                {
+                    Triangle triangle = triangles[i];
+                    if (triangle.isPointInsideTriangle(point))
+                    {
+                        pixels[y][x] = Pixel(triangle.getColour());
+                    }
+                }
+            }
+        }
+
+        BmpWriter bmpWriter("out" + std::to_string(frames) + ".bmp");
+        bmpWriter.writeHeader(width, height);
+        bmpWriter.writePixelData(pixels);
+
+        cube.setRotation(float3(0.0f, 2 * frames, 0.0f));
+    }
 
     return 0;
 }

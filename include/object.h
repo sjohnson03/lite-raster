@@ -20,6 +20,28 @@ public:
     static std::pair<std::vector<float3>, std::vector<float3>> loadFromFile(std::string file); // vertices and faces
 
     std::vector<Triangle3D *> triangles;
+
+    void setTransform(float3 position);
+    float3 getTransform();
+
+    void setRotation(float3 rotationDegrees);
+    float3 getRotation();
+
+    void setScale(float3 scale);
+    float3 getScale();
+
+    void updateTransformedTriangles();
+
+private:
+    float3 transform;
+    float3 rotation;
+    float3 scale;
+
+    std::vector<Triangle3D *> originalTriangles;
+
+    float3 rotateX(const float3 &v, float angle);
+    float3 rotateY(const float3 &v, float angle);
+    float3 rotateZ(const float3 &v, float angle);
 };
 
 #endif

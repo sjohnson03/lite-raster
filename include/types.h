@@ -30,7 +30,18 @@ struct float2
 struct float3
 {
     float x, y, z;
+    float3() : x(0), y(0), z(0) {} // default constructor
     float3(float x, float y, float z) : x(x), y(y), z(z) {}
+
+    float3 operator+(const float3 &other) const
+    {
+        return float3(x + other.x, y + other.y, z + other.z);
+    };
+
+    float3 operator*(const float3 &other) const
+    {
+        return float3(x * other.x, y * other.y, z * other.z);
+    }
 };
 
 struct Colour

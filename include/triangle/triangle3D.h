@@ -13,7 +13,6 @@ public:
 
     Triangle projectTo2D(int width, int height); // screen width and height
 
-private:
     float3 A, B, C; // vertexes of the triangle in 3D
     Colour colour;  // colour the triangle represents
 };
