@@ -42,6 +42,11 @@ struct float3
     {
         return float3(x * other.x, y * other.y, z * other.z);
     }
+
+    float3 operator*(const float value) const
+    {
+        return float3(x * value, y * value, z * value);
+    }
 };
 
 struct Colour

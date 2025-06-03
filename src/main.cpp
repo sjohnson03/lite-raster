@@ -7,28 +7,42 @@ int main()
     // screen space is from [-1, 1] for both width and height
     Scene scene = Scene();
 
-    Object cube("example/cube.obj");
+    Object cube("objects/cube.obj");
     cube.setScale(float3(0.5f, 0.5f, 0.5f));
 
     scene.add(cube);
 
-    for (int frames = 0; frames < 61; frames++)
+    // Ray lib
+    InitWindow(width, height, "LiteRaster");
+    SetTargetFPS(60);
+
+    Color *buffer = new Color[width * height];
+    Texture2D texture = LoadRenderTexture(width, height).texture;
+
+    while (!WindowShouldClose())
     {
         auto start = std::chrono::high_resolution_clock::now();
 
-        auto pixels = scene.render(width, height);
+        // update scene
+        cube.addRotation(float3(1.0f, 1.0f, 1.0f));
 
-        BmpWriter bmpWriter("out" + std::to_string(frames) + ".bmp");
-        bmpWriter.writeHeader(width, height);
-        bmpWriter.writePixelData(pixels);
+        scene.render(width, height, buffer);
 
-        cube.setRotation(float3(0.0f, 2 * frames, 0.0f));
+        UpdateTexture(texture, buffer); // upload CPU-rendered pixels to GPU
+
+        BeginDrawing();
+        ClearBackground(BLACK);
+        DrawTexture(texture, 0, 0, WHITE); // tells GPU to draw the texture to the screen
+        EndDrawing();
 
         auto stop = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-        std::cout << "Frame " << frames << " rendered in " << duration.count() << " ms" << std::endl; // measure time to render each frame
+        std::cout << "Frame rendered in " << duration.count() << " ms" << std::endl; // measure time to render each frame
     }
+
+    delete[] buffer;
+    CloseWindow();
 
     return 0;
 }

@@ -14,13 +14,16 @@ OBJECTS := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SOURCES))
 # Output binary name
 TARGET = $(BIN_DIR)/literaster
 
+# Libraries
+LIBS = -lraylib -lm -ldl -lpthread -lGL -lrt -lX11
+
 # Default target
 all: $(TARGET)
 
 # Link
 $(TARGET): $(OBJECTS)
 	@mkdir -p $(BIN_DIR)
-	$(CXX) $(OBJECTS) -o $@
+	$(CXX) $(OBJECTS) -o $@ $(LIBS)
 
 # Compile
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp

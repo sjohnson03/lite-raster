@@ -5,6 +5,7 @@
 #include "output.h"
 #include "triangle/triangle.h"
 #include "scene.h"
+#include "raylib.h"
 #include <vector>
 #include <chrono>
 

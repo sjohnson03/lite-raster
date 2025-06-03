@@ -8,12 +8,14 @@ Scene::~Scene()
 {
 }
 
-// Generates pixel buffer for the scene for the provided width and height
-std::vector<std::vector<Pixel>> Scene::render(int width, int height)
+// Renders and generates a buffer for a single frame
+void Scene::render(int width, int height, Color *buffer)
 {
     std::vector<Triangle> triangles;
 
-    std::vector<std::vector<Pixel>> pixels(height, std::vector<Pixel>(width)); // clear the pixel buffer
+    // Clear the buffer
+    for (int i = 0; i < width * height; i++)
+        buffer[i] = BLACK;
 
     for (unsigned long i = 0; i < objects.size(); i++) // project all triangles onto 2D
     {
@@ -41,13 +43,18 @@ std::vector<std::vector<Pixel>> Scene::render(int width, int height)
                 float2 point = float2(x, y);
                 if (triangle.isPointInsideTriangle(point))
                 {
-                    pixels[y][x] = Pixel(triangle.getColour());
+                    Colour c = triangle.getColour();
+
+                    // 2D triangle colours are stored as values from 0 - 1. Convert this to be 0 - 255
+                    buffer[y * width + x] = Color{
+                        (unsigned char)(c.r * 255), // red
+                        (unsigned char)(c.g * 255), // green
+                        (unsigned char)(c.b * 255), // blue
+                        255};                       // alpha
                 }
             }
         }
     }
-
-    return pixels;
 }
 
 void Scene::add(Object &object, float3 position)

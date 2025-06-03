@@ -25,6 +25,7 @@ public:
     float3 getTransform();
 
     void setRotation(float3 rotationDegrees);
+    void addRotation(float3);
     float3 getRotation();
 
     void setScale(float3 scale);

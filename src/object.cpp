@@ -92,9 +92,14 @@ float3 Object::getTransform()
 void Object::setRotation(float3 rotationDegrees)
 {
     // convert rotation to radians
-    rotation.x = rotationDegrees.x * M_PI / 180.0f;
-    rotation.y = rotationDegrees.y * M_PI / 180.0f;
-    rotation.z = rotationDegrees.z * M_PI / 180.0f;
+    rotation = rotationDegrees * (M_PI / 180.0f);
+
+    updateTransformedTriangles();
+}
+
+void Object::addRotation(float3 rotationDegrees)
+{
+    rotation = rotation + (rotationDegrees * (M_PI / 180.0f));
 
     updateTransformedTriangles();
 }
