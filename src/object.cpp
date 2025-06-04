@@ -4,6 +4,7 @@ Object::Object(std::string path)
 {
     auto result = loadFromFile(path);
     initFromVectors(result.first, result.second);
+    name = path;
 
     transform = float3(0.f, 0.f, 0.f);
     rotation = float3(0.f, 0.f, 0.f);
@@ -27,6 +28,11 @@ void Object::initFromVectors(const std::vector<float3> &points, const std::vecto
 
 Object::~Object()
 {
+    for (auto tri : triangles)
+        delete tri;
+
+    for (auto tri : originalTriangles)
+        delete tri;
 }
 
 std::pair<std::vector<float3>, std::vector<float3>> Object::loadFromFile(std::string path)
@@ -67,7 +73,10 @@ std::pair<std::vector<float3>, std::vector<float3>> Object::loadFromFile(std::st
                 // Store as float3 (assuming faces are triangles)
                 if (indices.size() == 3)
                 {
-                    result.second.push_back(float3{indices[0], indices[1], indices[2]});
+                    result.second.push_back(float3(
+                        static_cast<float>(indices[0]),
+                        static_cast<float>(indices[1]),
+                        static_cast<float>(indices[2])));
                 }
             }
         }

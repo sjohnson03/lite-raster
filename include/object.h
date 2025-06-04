@@ -20,6 +20,7 @@ public:
     static std::pair<std::vector<float3>, std::vector<float3>> loadFromFile(std::string file); // vertices and faces
 
     std::vector<Triangle3D *> triangles;
+    std::string name = "Object";
 
     void setTransform(float3 position);
     float3 getTransform();

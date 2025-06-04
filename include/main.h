@@ -6,6 +6,7 @@
 #include "triangle/triangle.h"
 #include "scene.h"
 #include "raylib.h"
+#include "yaml_processor.h"
 #include <vector>
 #include <chrono>
 

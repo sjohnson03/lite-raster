@@ -4,6 +4,7 @@
 #include "object.h"
 #include "triangle/triangle.h"
 #include "raylib.h"
+#include <map>
 #include <vector>
 
 class Scene
@@ -19,6 +20,8 @@ public:
 
     void add(Object &object, float3 position = float3(0, 0, 0));
     void addTri(Triangle &triangle, float3 position = float3(0, 0, 0)); // add triangle to the scene
+
+    std::map<std::string, Object *> addedObjects;
 
 private:
     float3 cameraPosition;
