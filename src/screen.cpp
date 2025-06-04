@@ -1,12 +1,15 @@
 #include "screen.h"
 
-// Converts from NDC (-1 to 1) to screen space (0 to width/height)
-float2 toScreenSpace(const float3 &vertex, int width, int height)
+float2 Screen::project(int width, int height, const float3 &point, float focalLength)
 {
-    // Calculate aspect ratio
-    float aspect = (float)width / (float)height;
+    // Avoid division by zero
+    float z = (point.z == 0.0f) ? 1e-5f : -point.z; // if it is 0, make it a very small number instead
+    float x_proj = (focalLength * point.x) / z;
+    float y_proj = (focalLength * point.y) / z;
 
-    float screenX = (vertex.x / aspect + 1.0f) * 0.5f * width; // Apply aspect ratio
-    float screenY = (1.0f - vertex.y) * 0.5f * height;         // Flip Y to match screen coords
-    return float2(screenX, screenY);
-}
+    // Map projected coordinates to screen space
+    float aspect = (float)width / (float)height;
+    float screen_x = (x_proj / aspect + 1.0f) * 0.5f * width;
+    float screen_y = (1.0f - y_proj) * 0.5f * height;
+    return float2(screen_x, screen_y);
+};

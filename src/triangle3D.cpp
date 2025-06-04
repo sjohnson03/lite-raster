@@ -17,10 +17,10 @@ Triangle3D::~Triangle3D()
 
 Triangle Triangle3D::projectTo2D(int width, int height)
 {
-    // Simple orthographic projection onto the XY plane
-    float2 a = toScreenSpace(A, width, height);
-    float2 b = toScreenSpace(B, width, height);
-    float2 c = toScreenSpace(C, width, height);
+    // Perspective projection onto the XY plane
+    float2 a = Screen::project(width, height, A, 1.0f);
+    float2 b = Screen::project(width, height, B, 1.0f);
+    float2 c = Screen::project(width, height, C, 1.0f);
 
     return Triangle(a, b, c, colour);
 }

@@ -2,6 +2,7 @@
 
 Scene::Scene()
 {
+    cameraPosition = float3(0.0f, 0.0f, 0.0f);
 }
 
 Scene::~Scene()
@@ -22,6 +23,11 @@ void Scene::render(int width, int height, Color *buffer)
         Object *object = objects[i].first;
         if (object)
         {
+            // kinda scuffed way to do this, not projecting any objects that are "behind the camera"
+            // when the camera can rotate, this will break
+            if (object->getTransform().z > cameraPosition.z)
+                continue;
+
             for (unsigned long j = 0; j < object->triangles.size(); j++)
             {
                 Triangle triangle = object->triangles[j]->projectTo2D(width, height);

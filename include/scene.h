@@ -19,6 +19,9 @@ public:
 
     void add(Object &object, float3 position = float3(0, 0, 0));
     void addTri(Triangle &triangle, float3 position = float3(0, 0, 0)); // add triangle to the scene
+
+private:
+    float3 cameraPosition;
 };
 
 #endif

@@ -21,7 +21,13 @@ struct float2
         return x * other.x + y * other.y;
     };
 
-    float2 perpendicular() const
+    float2 operator/(float value) const
+    {
+        return float2(x / value, y / value);
+    };
+
+    float2
+    perpendicular() const
     {
         return float2(-y, x);
     };

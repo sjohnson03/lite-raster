@@ -2,15 +2,16 @@
 
 int main()
 {
-    int width = 640;
-    int height = 360;
+    int width = 960;
+    int height = 540;
     // screen space is from [-1, 1] for both width and height
     Scene scene = Scene();
 
-    Object cube("objects/cube.obj");
-    cube.setScale(float3(0.5f, 0.5f, 0.5f));
+    Object monkey("objects/suzanne.obj");
+    monkey.setScale(float3(0.5f, 0.5f, 0.5f));
+    monkey.setTransform(float3(0.0f, 0.0f, -1.5f));
 
-    scene.add(cube);
+    scene.add(monkey);
 
     // Ray lib
     InitWindow(width, height, "LiteRaster");
@@ -24,7 +25,7 @@ int main()
         auto start = std::chrono::high_resolution_clock::now();
 
         // update scene
-        cube.addRotation(float3(1.0f, 1.0f, 1.0f));
+        monkey.addRotation(float3(0.0f, 1.0f, 0.0f));
 
         scene.render(width, height, buffer);
 
