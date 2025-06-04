@@ -35,7 +35,7 @@ int main()
         auto stop = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-        std::cout << "Frame rendered in " << duration.count() << " ms" << std::endl; // measure time to render each frame
+        std::cout << "\rFrame rendered in " << duration.count() << " ms" << std::flush; // measure time to render each frame
     }
 
     delete[] buffer;
