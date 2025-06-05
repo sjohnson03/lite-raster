@@ -8,7 +8,7 @@ Triangle3D::Triangle3D(float3 a, float3 b, float3 c)
     static std::mt19937 gen(rd());
     static std::uniform_real_distribution<float> dist(0.0f, 1.0f);
 
-    colour = Colour(dist(gen), dist(gen), dist(gen));
+    colour = Colour(dist(gen) * 255, dist(gen) * 255, dist(gen) * 255);
 }
 
 Triangle3D::~Triangle3D()

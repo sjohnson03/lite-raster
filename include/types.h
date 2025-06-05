@@ -1,6 +1,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include <cstdint>
+
 struct float2
 {
     float x, y;
@@ -57,15 +59,15 @@ struct float3
 
 struct Colour
 {
-    float r, g, b;
-    Colour(float red = 0.0f, float green = 0.0f, float blue = 0.0f)
+    uint8_t r, g, b;
+    Colour(uint8_t red = 1, uint8_t green = 1, uint8_t blue = 1)
         : r(red), g(green), b(blue) {}
 };
 
 struct Pixel
 {
     Colour colour;
-    Pixel(Colour colour = Colour(0.0f, 0.0f, 0.0f)) : colour(colour) {};
+    Pixel(Colour colour = Colour(0, 0, 0)) : colour(colour) {};
 };
 
 #endif

@@ -7,7 +7,7 @@
 class Triangle
 {
 public:
-    Triangle(float2 a, float2 b, float2 c, Colour colour = Colour(255.0f, 255.0f, 255.0f));
+    Triangle(float2 a, float2 b, float2 c, Colour colour = Colour(255, 255, 255));
     ~Triangle();
 
     float2 A, B, C;   // points of the triangle in 2D

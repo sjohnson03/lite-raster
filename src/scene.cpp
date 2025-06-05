@@ -63,10 +63,10 @@ void Scene::render(int width, int height, Color *buffer)
 
                     // 2D triangle colours are stored as values from 0 - 1. Convert this to be 0 - 255
                     buffer[y * width + x] = Color{
-                        (unsigned char)(c.r * 255), // red
-                        (unsigned char)(c.g * 255), // green
-                        (unsigned char)(c.b * 255), // blue
-                        255};                       // alpha
+                        (unsigned char)(c.r), // red
+                        (unsigned char)(c.g), // green
+                        (unsigned char)(c.b), // blue
+                        255};                 // alpha
                 }
             }
         }

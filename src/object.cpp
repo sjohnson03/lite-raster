@@ -132,6 +132,25 @@ float3 Object::getScale()
     return scale;
 }
 
+void Object::setColour(uint8_t r, uint8_t g, uint8_t b)
+{
+    Colour c = Colour(r, g, b);
+
+    // set all triangles colour to this new colour
+    for (Triangle3D *tri : triangles)
+        tri->colour = c;
+
+    for (Triangle3D *origTriangle : originalTriangles)
+        origTriangle->colour = c;
+
+    this->colour = c;
+}
+
+Colour Object::getColour()
+{
+    return colour;
+}
+
 void Object::updateTransformedTriangles()
 {
 

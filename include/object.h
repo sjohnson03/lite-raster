@@ -32,12 +32,16 @@ public:
     void setScale(float3 scale);
     float3 getScale();
 
+    void setColour(uint8_t r, uint8_t g, uint8_t b);
+    Colour getColour();
+
     void updateTransformedTriangles();
 
 private:
     float3 transform;
     float3 rotation;
     float3 scale;
+    Colour colour;
 
     std::vector<Triangle3D *> originalTriangles;
 
