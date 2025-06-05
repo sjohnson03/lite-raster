@@ -13,19 +13,20 @@ int main()
     InitWindow(width, height, "LiteRaster");
     SetTargetFPS(60);
 
-    Color *buffer = new Color[width * height];
+    Color *pixelBuffer = new Color[width * height]; // stores data about all pixels in the scene
     Texture2D texture = LoadRenderTexture(width, height).texture;
 
     while (!WindowShouldClose())
     {
         auto start = std::chrono::high_resolution_clock::now();
+        float deltaTime = GetFrameTime(); // for more consistent movement independent of FPS
 
         // update scene
-        scene.addedObjects.at("suzanne")->addRotation(float3(0.0f, 1.0f, 0.0f));
+        scene.addedObjects.at("suzanne")->addRotation(float3(0.0f, 50.0f * deltaTime, 0.0f));
 
-        scene.render(width, height, buffer);
+        scene.render(width, height, pixelBuffer);
 
-        UpdateTexture(texture, buffer); // upload CPU-rendered pixels to GPU
+        UpdateTexture(texture, pixelBuffer); // upload CPU-rendered pixels to GPU
 
         BeginDrawing();
         ClearBackground(BLACK);
@@ -38,7 +39,7 @@ int main()
         std::cout << "\rFrame rendered in " << duration.count() << " ms" << std::flush; // measure time to render each frame
     }
 
-    delete[] buffer;
+    delete[] pixelBuffer;
     CloseWindow();
 
     return 0;

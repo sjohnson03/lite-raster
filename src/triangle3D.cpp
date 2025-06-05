@@ -22,5 +22,11 @@ Triangle Triangle3D::projectTo2D(int width, int height)
     float2 b = Screen::project(width, height, B, 1.0f);
     float2 c = Screen::project(width, height, C, 1.0f);
 
-    return Triangle(a, b, c, colour);
+    Triangle tri = Triangle(a, b, c, colour);
+    // store depth of points in terms of the perspective projection
+    tri.Az = 1.0f / A.z;
+    tri.Bz = 1.0f / B.z;
+    tri.Cz = 1.0f / C.z;
+
+    return tri;
 }

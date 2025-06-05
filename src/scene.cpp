@@ -13,10 +13,14 @@ Scene::~Scene()
 void Scene::render(int width, int height, Color *buffer)
 {
     std::vector<Triangle> triangles;
+    float *zBuffer = new float[width * height]; // stores the depth of all pixels in the scene
 
     // Clear the buffer
     for (int i = 0; i < width * height; i++)
+    {
         buffer[i] = BLACK;
+        zBuffer[i] = INFINITY;
+    }
 
     for (unsigned long i = 0; i < objects.size(); i++) // project all triangles onto 2D
     {
@@ -49,6 +53,12 @@ void Scene::render(int width, int height, Color *buffer)
                 float2 point = float2(x, y);
                 if (triangle.isPointInsideTriangle(point))
                 {
+                    float depth = triangle.getDepth(point);
+                    if (depth > zBuffer[y * width + x]) // there is a closer pixel, do not draw over it
+                        continue;
+
+                    zBuffer[y * width + x] = depth;
+
                     Colour c = triangle.getColour();
 
                     // 2D triangle colours are stored as values from 0 - 1. Convert this to be 0 - 255
@@ -61,6 +71,7 @@ void Scene::render(int width, int height, Color *buffer)
             }
         }
     }
+    delete[] zBuffer;
 }
 
 void Scene::add(Object &object, float3 position)
