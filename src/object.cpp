@@ -20,10 +20,12 @@ void Object::initFromVectors(const std::vector<float3> &points, const std::vecto
         float3 v2 = points.at(faces[i].z);
 
         Triangle3D *tri = new Triangle3D(v0, v1, v2);
-        triangles.push_back(tri);
-    }
+        originalTriangles.push_back(tri);
 
-    originalTriangles = triangles;
+        Triangle3D *cloned = new Triangle3D(v0, v1, v2);
+        cloned->colour = tri->colour;
+        triangles.push_back(cloned);
+    }
 }
 
 Object::~Object()
@@ -132,6 +134,10 @@ float3 Object::getScale()
 
 void Object::updateTransformedTriangles()
 {
+
+    for (Triangle3D *tri : triangles)
+        delete tri;
+
     triangles.clear();
 
     for (Triangle3D *tri : originalTriangles)
