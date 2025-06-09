@@ -1,6 +1,0 @@
-[submodule "external/yaml-cpp"]
-	path = external/yaml-cpp
-	url = https://github.com/jbeder/yaml-cpp
-[submodule "external/raylib"]
-	path = external/raylib
-	url = https://github.com/raysan5/raylib.git

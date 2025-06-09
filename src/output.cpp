@@ -16,7 +16,7 @@ BmpWriter::~BmpWriter()
     }
 }
 
-void BmpWriter::write(u_int16_t data, size_t size)
+void BmpWriter::write(uint16_t data, size_t size)
 {
     outputStream.write((char *)&data, size);
 }

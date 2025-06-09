@@ -5,6 +5,7 @@
 #include "triangle/triangle.h"
 #include "triangle/triangle3D.h"
 #include <vector>
+#include <math.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
