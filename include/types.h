@@ -55,6 +55,17 @@ struct float3
     {
         return float3(x * value, y * value, z * value);
     }
+
+    float3 operator/(const float value) const
+    {
+        return float3(x / value, y / value, z / value);
+    }
+
+    float3 normalise() const
+    {
+        float sum = x + y + z;
+        return float3(x, y, z) / sum;
+    }
 };
 
 struct Colour

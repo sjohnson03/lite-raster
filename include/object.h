@@ -16,9 +16,9 @@ public:
     Object(std::string path); // create from file
     ~Object();
 
-    void initFromVectors(const std::vector<float3> &points, const std::vector<float3> &faces);
+    void initFromVectors(const std::vector<float3> &points, const std::vector<float3> &normals, const std::vector<float3> &faces);
 
-    static std::pair<std::vector<float3>, std::vector<float3>> loadFromFile(std::string file); // vertices and faces
+    static std::pair<std::pair<std::vector<float3>, std::vector<float3>>, std::vector<float3>> loadFromFile(std::string file); // vertices and faces
 
     std::vector<Triangle3D *> triangles;
     std::string name = "Object";

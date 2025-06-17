@@ -4,10 +4,17 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+struct VertexIndex
+{
+    int vIdx;
+    int vtIdx;
+    int vnIdx;
+};
+
 Object::Object(std::string path)
 {
     auto result = loadFromFile(path);
-    initFromVectors(result.first, result.second);
+    initFromVectors(result.first.first, result.first.second, result.second);
     name = path;
 
     transform = float3(0.f, 0.f, 0.f);
@@ -15,13 +22,17 @@ Object::Object(std::string path)
     scale = float3(1.0f, 1.0f, 1.0f);
 }
 
-void Object::initFromVectors(const std::vector<float3> &points, const std::vector<float3> &faces)
+void Object::initFromVectors(const std::vector<float3> &points, const std::vector<float3> &normals, const std::vector<float3> &faces)
 {
     for (unsigned long i = 0; i < faces.size(); i++)
     {
-        float3 v0 = points.at(faces[i].x);
-        float3 v1 = points.at(faces[i].y);
-        float3 v2 = points.at(faces[i].z);
+        Vertex v0 = points.at(faces[i].x);
+        Vertex v1 = points.at(faces[i].y);
+        Vertex v2 = points.at(faces[i].z);
+
+        v0.normal = normals.at(faces[i].x);
+        v1.normal = normals.at(faces[i].y);
+        v2.normal = normals.at(faces[i].z);
 
         Triangle3D *tri = new Triangle3D(v0, v1, v2);
         originalTriangles.push_back(tri);
@@ -41,9 +52,9 @@ Object::~Object()
         delete tri;
 }
 
-std::pair<std::vector<float3>, std::vector<float3>> Object::loadFromFile(std::string path)
+std::pair<std::pair<std::vector<float3>, std::vector<float3>>, std::vector<float3>> Object::loadFromFile(std::string path)
 {
-    std::pair<std::vector<float3>, std::vector<float3>> result;
+    std::pair<std::pair<std::vector<float3>, std::vector<float3>>, std::vector<float3>> result;
 
     std::ifstream file;
     file.open(path);
@@ -53,36 +64,51 @@ std::pair<std::vector<float3>, std::vector<float3>> Object::loadFromFile(std::st
 
         while (std::getline(file, line))
         {
-            if (!line.empty() && line[0] == 'v') // if this is a vertex
+            if (line.rfind("vn ", 0) == 0) // if reading a vertex normal
+            {
+                std::stringstream ss(line);
+                std::string prefix;
+                float x, y, z;
+                ss >> prefix >> x >> y >> z;
+                result.first.second.push_back(float3{x, y, z});
+            }
+            else if (!line.empty() && line[0] == 'v') // if this is a vertex
             {
                 std::stringstream ss(line);
                 char type;
                 float x, y, z;
                 ss >> type >> x >> y >> z;
-                result.first.push_back(float3{x, y, z});
+                result.first.first.push_back(float3{x, y, z});
             }
             else if (!line.empty() && line[0] == 'f') // if this a face
             {
                 std::stringstream ss(line);
                 char type;
                 ss >> type;
-                std::vector<float> indices;
+                std::vector<VertexIndex> faceVerts;
                 std::string vertex;
                 while (ss >> vertex)
                 {
                     std::stringstream vs(vertex);
-                    std::string indexStr;
-                    std::getline(vs, indexStr, '/');
-                    int idx = std::stoi(indexStr) - 1; // 0-indexed
-                    indices.push_back(static_cast<float>(idx));
+                    std::string v, vt, vn;
+                    std::getline(vs, v, '/');
+                    std::getline(vs, vt, '/');
+                    std::getline(vs, vn, '/');
+
+                    VertexIndex vi;
+                    vi.vIdx = std::stoi(v) - 1;
+                    vi.vtIdx = vt.empty() ? -1 : std::stoi(vt) - 1;
+                    vi.vnIdx = vn.empty() ? -1 : std::stoi(vn) - 1;
+                    faceVerts.push_back(vi);
                 }
+
                 // Store as float3 (assuming faces are triangles)
-                if (indices.size() == 3)
+                if (faceVerts.size() == 3)
                 {
                     result.second.push_back(float3(
-                        static_cast<float>(indices[0]),
-                        static_cast<float>(indices[1]),
-                        static_cast<float>(indices[2])));
+                        static_cast<float>(faceVerts[0].vIdx),
+                        static_cast<float>(faceVerts[1].vIdx),
+                        static_cast<float>(faceVerts[2].vIdx)));
                 }
             }
         }
@@ -166,9 +192,9 @@ void Object::updateTransformedTriangles()
     for (Triangle3D *tri : originalTriangles)
     {
         // Clone triangle vertices
-        float3 A = tri->A;
-        float3 B = tri->B;
-        float3 C = tri->C;
+        float3 A = tri->A.position;
+        float3 B = tri->B.position;
+        float3 C = tri->C.position;
 
         // Scale
         A = A * scale;
