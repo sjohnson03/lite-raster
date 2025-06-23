@@ -37,11 +37,12 @@ void Scene::render(int width, int height, Color *buffer)
                 Vertex A = object->triangles[j]->A;
                 Vertex B = object->triangles[j]->B;
                 Vertex C = object->triangles[j]->C;
+
                 Triangle triangle = object->triangles[j]->projectTo2D(width, height);
 
                 triangle.center = (A.position + B.position + C.position) / 3.0f;
                 triangle.normal = (A.normal + B.normal + C.normal).normalise();
-                std::cout << (A.normal + B.normal + C.normal).z << std::endl;
+
                 triangles.push_back(triangle);
             }
         }
@@ -51,6 +52,7 @@ void Scene::render(int width, int height, Color *buffer)
     light.position = float3(2.0f, 2.0f, -2.0f); // position: above & behind the camera
     light.colour = Colour(255, 255, 255);       // colour: white light
     light.intensity = 1.0f;                     // intensity
+
     // Rasterise
     for (const Triangle &triangle : triangles)
     {
@@ -61,6 +63,7 @@ void Scene::render(int width, int height, Color *buffer)
         maxX = std::min(maxX, width - 1);
         minY = std::max(minY, 0);
         maxY = std::min(maxY, height - 1);
+
         for (int y = minY; y <= maxY; ++y)
         {
             for (int x = minX; x <= maxX; ++x)
@@ -74,17 +77,29 @@ void Scene::render(int width, int height, Color *buffer)
 
                     zBuffer[y * width + x] = depth;
 
-                    Colour c = triangle.getColour();
                     float3 center = triangle.center;
                     float3 normal = triangle.normal;
 
-                    Colour lightCol = computeLighting(center, normal, cameraPosition, light) * triangle.getColour();
+                    Colour lightCol = computeLighting(center, normal, cameraPosition, light);
+
+                    float3 triColNorm(
+                        triangle.getColour().r / 255.0f,
+                        triangle.getColour().g / 255.0f,
+                        triangle.getColour().b / 255.0f);
+
+                    float3 lightColNorm(
+                        lightCol.r / 255.0f,
+                        lightCol.g / 255.0f,
+                        lightCol.b / 255.0f);
+
+                    float3 c = triColNorm * lightColNorm;
+
                     // 2D triangle colours are stored as values from 0 - 1. Convert this to be 0 - 255
                     buffer[y * width + x] = Color{
-                        (unsigned char)(c.r), // red
-                        (unsigned char)(c.g), // green
-                        (unsigned char)(c.b), // blue
-                        255};                 // alpha
+                        (unsigned char)(c.x * 255), // red
+                        (unsigned char)(c.y * 255), // green
+                        (unsigned char)(c.z * 255), // blue
+                        255};                       // alpha
                 }
             }
         }
@@ -104,10 +119,22 @@ Colour Scene::computeLighting(const float3 &point, const float3 &normal, const f
     float3 reflectionDir = normal * normal.dot(lightDirection) * 2.0f - lightDirection;
 
     // Ambient
-    float ambientStrength = 0.1f;
-    float3 ambient = lightColour * ambientStrength;
+    float ambientStrength = 0.5f;
+    float3 ambient = lightColour * ambientStrength * light.intensity;
 
-    float3 finalColour = ambient; // diffuseColour;
+    // Diffuse
+    float diffuse = std::max(normal.dot(lightDirection), 0.0f);
+    float3 diffuseColour = lightColour * diffuse * light.intensity;
+
+    // Specular
+
+    float specStrength = 0.5f;
+    float shininess = 32.0f;
+    float spec = std::pow(std::max(viewDirection.dot(reflectionDir), 0.0f), shininess);
+    float3 specular = lightColour * specStrength * spec;
+
+    float3 finalColour = ambient + diffuseColour + specular;
+
     auto clamp = [](float v, float lo, float hi)
     { return v < lo ? lo : (v > hi ? hi : v); };
     finalColour.x = clamp(finalColour.x, 0.0f, 1.0f);

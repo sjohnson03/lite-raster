@@ -192,32 +192,32 @@ void Object::updateTransformedTriangles()
     for (Triangle3D *tri : originalTriangles)
     {
         // Clone triangle vertices
-        float3 A = tri->A.position;
-        float3 B = tri->B.position;
-        float3 C = tri->C.position;
+        Vertex A = tri->A;
+        Vertex B = tri->B;
+        Vertex C = tri->C;
 
         // Scale
-        A = A * scale;
-        B = B * scale;
-        C = C * scale;
+        A.position = A.position * scale;
+        B.position = B.position * scale;
+        C.position = C.position * scale;
 
         // Rotate (around origin)
-        A = rotateX(A, rotation.x);
-        A = rotateY(A, rotation.y);
-        A = rotateZ(A, rotation.z);
+        A.position = rotateX(A.position, rotation.x);
+        A.position = rotateY(A.position, rotation.y);
+        A.position = rotateZ(A.position, rotation.z);
 
-        B = rotateX(B, rotation.x);
-        B = rotateY(B, rotation.y);
-        B = rotateZ(B, rotation.z);
+        B.position = rotateX(B.position, rotation.x);
+        B.position = rotateY(B.position, rotation.y);
+        B.position = rotateZ(B.position, rotation.z);
 
-        C = rotateX(C, rotation.x);
-        C = rotateY(C, rotation.y);
-        C = rotateZ(C, rotation.z);
+        C.position = rotateX(C.position, rotation.x);
+        C.position = rotateY(C.position, rotation.y);
+        C.position = rotateZ(C.position, rotation.z);
 
         // Translate
-        A = A + transform;
-        B = B + transform;
-        C = C + transform;
+        A.position = A.position + transform;
+        B.position = B.position + transform;
+        C.position = C.position + transform;
 
         Triangle3D *newTri = new Triangle3D(A, B, C);
         newTri->colour = tri->colour;
