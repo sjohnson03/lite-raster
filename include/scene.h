@@ -3,6 +3,7 @@
 
 #include "object.h"
 #include "triangle/triangle.h"
+#include "light.h"
 #include "raylib.h"
 #include <map>
 #include <vector>
@@ -17,6 +18,8 @@ public:
     std::vector<std::pair<Triangle *, float3>> triangles; // All triangles currently in the scene and their position
 
     void render(int width, int height, Color *buffer);
+
+    Colour computeLighting(const float3 &point, const float3 &normal, const float3 &viewPos, Light &Light);
 
     void add(Object &object, float3 position = float3(0, 0, 0));
     void addTri(Triangle &triangle, float3 position = float3(0, 0, 0)); // add triangle to the scene

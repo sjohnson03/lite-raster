@@ -13,6 +13,10 @@ public:
     float2 A, B, C;   // points of the triangle in 2D
     float Az, Bz, Cz; // depth of each point
 
+    // Saved information from conversion from 3D
+    float3 center;
+    float3 normal; // average normal for the whole triangle
+
     bool isPointInsideTriangle(const float2 &point) const;
     std::tuple<int, int, int, int> getBoundingBox(int width, int height) const;
 

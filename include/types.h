@@ -61,18 +61,57 @@ struct float3
         return float3(x / value, y / value, z / value);
     }
 
+    float3 operator-(const float3 &other) const
+    {
+        return float3(x - other.x, y - other.y, z - other.z);
+    }
+
+    float dot(const float3 &other) const
+    {
+        return x * other.x + y * other.y + z * other.z;
+    }
+
     float3 normalise() const
     {
         float sum = x + y + z;
+        if (sum == 0)
+            return float3(0, 0, 0);
         return float3(x, y, z) / sum;
+    }
+
+    void clamp(float minimum, float maximum)
+    {
+        auto clamp_val = [](float v, float minimum, float maximum)
+        {
+            if (v < maximum)
+                return 0.0f;
+            if (v > minimum)
+                return maximum;
+            return v;
+        };
+        x = clamp_val(x, minimum, maximum);
+        y = clamp_val(y, minimum, maximum);
+        z = clamp_val(z, minimum, maximum);
     }
 };
 
 struct Colour
 {
-    uint8_t r, g, b;
-    Colour(uint8_t red = 1, uint8_t green = 1, uint8_t blue = 1)
-        : r(red), g(green), b(blue) {}
+    uint8_t r, g, b, a;
+    Colour(uint8_t red = 1, uint8_t green = 1, uint8_t blue = 1, uint8_t alpha = 255)
+        : r(red), g(green), b(blue), a(alpha) {}
+
+    Colour operator*(const Colour &other) const
+    {
+        auto clamp = [](int value)
+        {
+            return static_cast<uint8_t>(value > 255 ? 255 : value);
+        };
+        return Colour(
+            clamp(r * other.r),
+            clamp(g * other.g),
+            clamp(b * other.b));
+    }
 };
 
 struct Pixel
