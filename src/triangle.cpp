@@ -67,6 +67,21 @@ float Triangle::getDepth(float2 point) const
     return -1.0f / z;
 }
 
+float3 Triangle::getNormal() const
+{
+    // Recreate vectors in 3D
+    float3 A3D = float3(A.x, A.y, Az);
+    float3 B3D = float3(B.x, B.y, Bz);
+    float3 C3D = float3(C.x, C.y, Cz);
+
+    // Calculate two edge vectors
+    float3 edge1 = B3D - A3D;
+    float3 edge2 = C3D - A3D;
+
+    float3 normal = edge1.cross(edge2);
+    return normal.normalise();
+}
+
 void Triangle::setColour(Colour colour)
 {
     this->colour = colour;

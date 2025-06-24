@@ -41,28 +41,29 @@ void Scene::render(int width, int height, Color *buffer)
                 Triangle triangle = object->triangles[j]->projectTo2D(width, height);
 
                 triangle.center = (A.position + B.position + C.position) / 3.0f;
-                triangle.normal = (A.normal + B.normal + C.normal).normalise();
 
                 triangles.push_back(triangle);
             }
         }
     }
 
+    rasterise(width, height, buffer, zBuffer, &triangles);
+
+    delete[] zBuffer;
+}
+
+void Scene::rasterise(int width, int height, Color *buffer, float *zBuffer, std::vector<Triangle> *triangles)
+{
     Light light;
     light.position = float3(2.0f, 2.0f, -2.0f); // position: above & behind the camera
     light.colour = Colour(255, 255, 255);       // colour: white light
     light.intensity = 1.0f;                     // intensity
 
     // Rasterise
-    for (const Triangle &triangle : triangles)
+    for (const Triangle &triangle : *triangles)
     {
         // draw where there are triangles
         auto [minX, maxX, minY, maxY] = triangle.getBoundingBox(width, height);
-
-        minX = std::max(minX, 0);
-        maxX = std::min(maxX, width - 1);
-        minY = std::max(minY, 0);
-        maxY = std::min(maxY, height - 1);
 
         for (int y = minY; y <= maxY; ++y)
         {
@@ -78,7 +79,7 @@ void Scene::render(int width, int height, Color *buffer)
                     zBuffer[y * width + x] = depth;
 
                     float3 center = triangle.center;
-                    float3 normal = triangle.normal;
+                    float3 normal = triangle.getNormal();
 
                     Colour lightCol = computeLighting(center, normal, cameraPosition, light);
 
@@ -104,7 +105,6 @@ void Scene::render(int width, int height, Color *buffer)
             }
         }
     }
-    delete[] zBuffer;
 }
 
 Colour Scene::computeLighting(const float3 &point, const float3 &normal, const float3 &viewPos, Light &light)
@@ -127,7 +127,6 @@ Colour Scene::computeLighting(const float3 &point, const float3 &normal, const f
     float3 diffuseColour = lightColour * diffuse * light.intensity;
 
     // Specular
-
     float specStrength = 0.5f;
     float shininess = 32.0f;
     float spec = std::pow(std::max(viewDirection.dot(reflectionDir), 0.0f), shininess);

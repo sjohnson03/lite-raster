@@ -15,12 +15,12 @@ public:
 
     // Saved information from conversion from 3D
     float3 center;
-    float3 normal; // average normal for the whole triangle
 
     bool isPointInsideTriangle(const float2 &point) const;
     std::tuple<int, int, int, int> getBoundingBox(int width, int height) const;
 
     float getDepth(float2 point) const;
+    float3 getNormal() const;
 
     void setColour(Colour colour);
     Colour getColour() const;

@@ -28,6 +28,8 @@ public:
 
 private:
     float3 cameraPosition;
+
+    void rasterise(int width, int height, Color *buffer, float *zBuffer, std::vector<Triangle> *triangles);
 };
 
 #endif

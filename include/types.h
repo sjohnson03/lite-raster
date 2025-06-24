@@ -71,6 +71,14 @@ struct float3
         return x * other.x + y * other.y + z * other.z;
     }
 
+    float3 cross(const float3 &other) const
+    {
+        return float3(
+            y * other.z - z * other.y,
+            z * other.x - x * other.z,
+            x * other.y - y * other.x);
+    };
+
     float3 normalise() const
     {
         float sum = x + y + z;
