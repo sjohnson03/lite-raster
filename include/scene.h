@@ -29,7 +29,8 @@ public:
 private:
     float3 cameraPosition;
 
-    void rasterise(int width, int height, Color *buffer, float *zBuffer, std::vector<Triangle> *triangles);
+    // rasterisers a given triangle onto the screen
+    void rasterise(int width, int height, Color *buffer, std::vector<float> *zBuffer, Triangle *triangle);
 };
 
 #endif
