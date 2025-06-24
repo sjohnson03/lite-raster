@@ -16,16 +16,20 @@ public:
     // Saved information from conversion from 3D
     float3 center;
 
+    void calculateBarycentricCoordinates(const float2 &point); // must be called before getting depth and world pos
+
     bool isPointInsideTriangle(const float2 &point) const;
     std::tuple<int, int, int, int> getBoundingBox(int width, int height) const;
 
-    float getDepth(float2 point) const;
+    float getDepth() const;
+    float3 getWorldPosition() const;
     float3 getNormal() const;
 
     void setColour(Colour colour);
     Colour getColour() const;
 
 private:
+    float denom, beta, gamma, alpha; // for Barycentric coordinates
     Colour colour;
     bool edgeFunction(const float2 &a, const float2 &b, const float2 &c) const;
 };

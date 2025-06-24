@@ -2,6 +2,7 @@
 #define TYPES_H
 
 #include <cstdint>
+#include <math.h>
 
 struct float2
 {
@@ -66,6 +67,11 @@ struct float3
         return float3(x - other.x, y - other.y, z - other.z);
     }
 
+    float3 operator-() const
+    {
+        return float3(-x, -y, -z);
+    }
+
     float dot(const float3 &other) const
     {
         return x * other.x + y * other.y + z * other.z;
@@ -81,10 +87,10 @@ struct float3
 
     float3 normalise() const
     {
-        float sum = x + y + z;
-        if (sum == 0)
+        float length = sqrt(x * x + y * y + z * z);
+        if (length == 0)
             return float3(0, 0, 0);
-        return float3(x, y, z) / sum;
+        return float3(x / length, y / length, z / length);
     }
 
     void clamp(float minimum, float maximum)

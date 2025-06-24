@@ -55,12 +55,12 @@ void Scene::render(int width, int height, Color *buffer)
 void Scene::rasterise(int width, int height, Color *buffer, float *zBuffer, std::vector<Triangle> *triangles)
 {
     Light light;
-    light.position = float3(2.0f, 2.0f, -2.0f); // position: above & behind the camera
-    light.colour = Colour(255, 255, 255);       // colour: white light
-    light.intensity = 1.0f;                     // intensity
+    light.position = float3(550.0f, 250.0f, 5.0f);
+    light.colour = Colour(255, 255, 255); // colour: white light
+    light.intensity = 1.0f;               // intensity
 
     // Rasterise
-    for (const Triangle &triangle : *triangles)
+    for (Triangle &triangle : *triangles)
     {
         // draw where there are triangles
         auto [minX, maxX, minY, maxY] = triangle.getBoundingBox(width, height);
@@ -72,16 +72,18 @@ void Scene::rasterise(int width, int height, Color *buffer, float *zBuffer, std:
                 float2 point = float2(x, y);
                 if (triangle.isPointInsideTriangle(point))
                 {
-                    float depth = triangle.getDepth(point);
+                    triangle.calculateBarycentricCoordinates(point);
+
+                    float depth = triangle.getDepth();
                     if (depth > zBuffer[y * width + x]) // there is a closer pixel, do not draw over it
                         continue;
 
                     zBuffer[y * width + x] = depth;
 
-                    float3 center = triangle.center;
+                    float3 position = triangle.getWorldPosition();
                     float3 normal = triangle.getNormal();
 
-                    Colour lightCol = computeLighting(center, normal, cameraPosition, light);
+                    Colour lightCol = computeLighting(position, normal, cameraPosition, light);
 
                     float3 triColNorm(
                         triangle.getColour().r / 255.0f,
@@ -116,11 +118,11 @@ Colour Scene::computeLighting(const float3 &point, const float3 &normal, const f
 
     float3 lightDirection = (light.position - point).normalise();
     float3 viewDirection = (viewPos - point).normalise();
-    float3 reflectionDir = normal * normal.dot(lightDirection) * 2.0f - lightDirection;
+    float3 reflectionDir = lightDirection - normal * 2.0f * normal.dot(lightDirection);
 
     // Ambient
     float ambientStrength = 0.5f;
-    float3 ambient = lightColour * ambientStrength * light.intensity;
+    float3 ambient = lightColour * ambientStrength;
 
     // Diffuse
     float diffuse = std::max(normal.dot(lightDirection), 0.0f);
@@ -128,8 +130,9 @@ Colour Scene::computeLighting(const float3 &point, const float3 &normal, const f
 
     // Specular
     float specStrength = 0.5f;
-    float shininess = 32.0f;
-    float spec = std::pow(std::max(viewDirection.dot(reflectionDir), 0.0f), shininess);
+    float shininess = 8.0f;
+    float dotProduct = std::max(viewDirection.dot(reflectionDir), 0.0f);
+    float spec = (dotProduct > 0.1f) ? std::pow(dotProduct, shininess) : 0.0f;
     float3 specular = lightColour * specStrength * spec;
 
     float3 finalColour = ambient + diffuseColour + specular;

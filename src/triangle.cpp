@@ -42,31 +42,25 @@ std::tuple<int, int, int, int> Triangle::getBoundingBox(int width, int height) c
     return {minX, maxX, minY, maxY};
 }
 
-float Triangle::getDepth(float2 point) const
+float Triangle::getDepth() const
 {
-    // convert to Barycentric Coordinates - https://en.wikipedia.org/wiki/Barycentric_coordinate_system
-    float2 v0 = B - A;
-    float2 v1 = C - A;
-    float2 v2 = point - A;
-
-    float d00 = v0.dot(v0);
-    float d01 = v0.dot(v1);
-    float d11 = v1.dot(v1);
-    float d20 = v2.dot(v0);
-    float d21 = v2.dot(v1);
-
-    float denom = d00 * d11 - d01 * d01;
-
-    float beta = (d11 * d20 - d01 * d21) / denom;
-    float gamma = (d00 * d21 - d01 * d20) / denom;
-    float alpha = 1.0f - beta - gamma; // this only works when the point is inside the triangle
-
     // For any point P,  P = α * A + β * B + γ * C
     float z = alpha * Az + beta * Bz + gamma * Cz; // using the stored Z values, we can calculate the Z value for this point
 
     return -1.0f / z;
 }
 
+float3 Triangle::getWorldPosition() const
+{
+    float3 A3D = float3(A.x, A.y, Az);
+    float3 B3D = float3(B.x, B.y, Bz);
+    float3 C3D = float3(C.x, C.y, Cz);
+
+    // For any point P, P = α*A + β*B + γ*C
+    float3 worldPos = A3D * alpha + B3D * beta + C3D * gamma;
+
+    return worldPos;
+}
 float3 Triangle::getNormal() const
 {
     // Recreate vectors in 3D
@@ -78,7 +72,7 @@ float3 Triangle::getNormal() const
     float3 edge1 = B3D - A3D;
     float3 edge2 = C3D - A3D;
 
-    float3 normal = edge1.cross(edge2);
+    float3 normal = edge2.cross(edge1);
     return normal.normalise();
 }
 
@@ -96,4 +90,22 @@ Colour Triangle::getColour() const
 bool Triangle::edgeFunction(const float2 &a, const float2 &b, const float2 &c) const
 {
     return ((c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x) >= 0);
+}
+
+void Triangle::calculateBarycentricCoordinates(const float2 &point)
+{
+    float2 v0 = B - A;
+    float2 v1 = C - A;
+    float2 v2 = point - A;
+
+    float d00 = v0.dot(v0);
+    float d01 = v0.dot(v1);
+    float d11 = v1.dot(v1);
+    float d20 = v2.dot(v0);
+    float d21 = v2.dot(v1);
+
+    denom = d00 * d11 - d01 * d01;
+    beta = (d11 * d20 - d01 * d21) / denom;
+    gamma = (d00 * d21 - d01 * d20) / denom;
+    alpha = 1.0f - beta - gamma;
 }
