@@ -33,69 +33,90 @@ void Scene::render(int width, int height, Color *buffer)
 
             for (unsigned long j = 0; j < object->triangles.size(); j++)
             {
-                Vertex A = object->triangles[j]->A;
-                Vertex B = object->triangles[j]->B;
-                Vertex C = object->triangles[j]->C;
-
-                Triangle triangle = object->triangles[j]->projectTo2D(width, height);
-
-                triangle.center = (A.position + B.position + C.position) / 3.0f;
-
-                rasterise(width, height, buffer, &zBuffer, &triangle);
+                rasterise(width, height, buffer, &zBuffer, object->triangles[j], object->getTransform());
             }
         }
     }
 }
 
-void Scene::rasterise(int width, int height, Color *buffer, std::vector<float> *zBuffer, Triangle *triangle)
+void Scene::rasterise(int width, int height, Color *buffer, std::vector<float> *zBuffer, Triangle3D *triangle3D, float3 objectPosition)
 {
     Light light;
-    light.position = float3(550.0f, 250.0f, 5.0f);
+    light.position = float3(0.f, 2.f, -5.0f);
     light.colour = Colour(255, 255, 255); // colour: white light
-    light.intensity = 1.0f;               // intensity
+    light.intensity = 1.5f;               // intensity
+
+    float3 vertexColours[3];
+
+    float3 worldPosA = triangle3D->A.position + objectPosition;
+    float3 worldPosB = triangle3D->B.position + objectPosition;
+    float3 worldPosC = triangle3D->C.position + objectPosition;
+
+    Colour c0 = computeLighting(worldPosA, triangle3D->A.normal, cameraPosition, light);
+    Colour c1 = computeLighting(worldPosB, triangle3D->B.normal, cameraPosition, light);
+    Colour c2 = computeLighting(worldPosC, triangle3D->C.normal, cameraPosition, light);
+
+    vertexColours[0] = float3(c0.r / 255.0f, c0.g / 255.0f, c0.b / 255.0f);
+    vertexColours[1] = float3(c1.r / 255.0f, c1.g / 255.0f, c1.b / 255.0f);
+    vertexColours[2] = float3(c2.r / 255.0f, c2.g / 255.0f, c2.b / 255.0f);
+
+    float z0 = triangle3D->A.position.z;
+    float z1 = triangle3D->B.position.z;
+    float z2 = triangle3D->C.position.z;
 
     // Rasterise
-    // draw where tje triangle is
-    auto [minX, maxX, minY, maxY] = triangle->getBoundingBox(width, height);
+    Triangle triangle = triangle3D->projectTo2D(width, height);
+
+    // draw where the triangle is
+    auto [minX, maxX, minY, maxY] = triangle.getBoundingBox(width, height);
 
     for (int y = minY; y <= maxY; ++y)
     {
         for (int x = minX; x <= maxX; ++x)
         {
             float2 point = float2(x, y);
-            if (triangle->isPointInsideTriangle(point))
+            if (triangle.isPointInsideTriangle(point))
             {
-                float depth = triangle->getDepth();
+                float depth = triangle.getDepth();
                 if (depth > zBuffer->at(y * width + x)) // there is a closer pixel, do not draw over it
                     continue;
 
                 (*zBuffer)[y * width + x] = depth;
 
-                triangle->calculateBarycentricCoordinates(point);
+                triangle.calculateBarycentricCoordinates(point);
 
-                float3 position = triangle->getWorldPosition();
-                float3 normal = triangle->getNormal();
+                // weight barycentric coordinates by inverse depth
+                float w0 = triangle.alpha / -z0; // alpha corresponds to vertex A
+                float w1 = triangle.beta / -z1;  // beta corresponds to vertex B
+                float w2 = triangle.gamma / -z2; // gamma corresponds to vertex C
 
-                Colour lightCol = computeLighting(position, normal, cameraPosition, light);
+                float wSum = w0 + w1 + w2;
 
-                float3 triColNorm(
-                    triangle->getColour().r / 255.0f,
-                    triangle->getColour().g / 255.0f,
-                    triangle->getColour().b / 255.0f);
+                if (wSum > 0.0001f)
+                {
+                    w0 /= wSum;
+                    w1 /= wSum;
+                    w2 /= wSum;
 
-                float3 lightColNorm(
-                    lightCol.r / 255.0f,
-                    lightCol.g / 255.0f,
-                    lightCol.b / 255.0f);
+                    float3 interpolatedLight =
+                        vertexColours[0] * w0 + // Vertex A lighting * alpha
+                        vertexColours[1] * w1 + // Vertex B lighting * beta
+                        vertexColours[2] * w2;  // Vertex C lighting * gamma
 
-                float3 c = triColNorm * lightColNorm;
+                    float3 triColNorm(
+                        triangle.getColour().r / 255.0f,
+                        triangle.getColour().g / 255.0f,
+                        triangle.getColour().b / 255.0f);
 
-                // 2D triangle colours are stored as values from 0 - 1. Convert this to be 0 - 255
-                buffer[y * width + x] = Color{
-                    (unsigned char)(c.x * 255), // red
-                    (unsigned char)(c.y * 255), // green
-                    (unsigned char)(c.z * 255), // blue
-                    255};                       // alpha
+                    float3 c = triColNorm * interpolatedLight;
+
+                    // 2D triangle colours are stored as values from 0 - 1. Convert this to be 0 - 255
+                    buffer[y * width + x] = Color{
+                        (unsigned char)(c.x * 255), // red
+                        (unsigned char)(c.y * 255), // green
+                        (unsigned char)(c.z * 255), // blue
+                        255};                       // alpha
+                }
             }
         }
     }
@@ -113,7 +134,7 @@ Colour Scene::computeLighting(const float3 &point, const float3 &normal, const f
     float3 reflectionDir = lightDirection - normal * 2.0f * normal.dot(lightDirection);
 
     // Ambient
-    float ambientStrength = 0.5f;
+    float ambientStrength = 0.2f;
     float3 ambient = lightColour * ambientStrength;
 
     // Diffuse
@@ -122,7 +143,7 @@ Colour Scene::computeLighting(const float3 &point, const float3 &normal, const f
 
     // Specular
     float specStrength = 0.5f;
-    float shininess = 8.0f;
+    float shininess = 32.0f;
     float dotProduct = std::max(viewDirection.dot(reflectionDir), 0.0f);
     float spec = (dotProduct > 0.1f) ? std::pow(dotProduct, shininess) : 0.0f;
     float3 specular = lightColour * specStrength * spec;

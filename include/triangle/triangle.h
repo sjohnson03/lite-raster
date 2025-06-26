@@ -28,8 +28,9 @@ public:
     void setColour(Colour colour);
     Colour getColour() const;
 
-private:
     float denom, beta, gamma, alpha; // for Barycentric coordinates
+
+private:
     Colour colour;
     bool edgeFunction(const float2 &a, const float2 &b, const float2 &c) const;
 };

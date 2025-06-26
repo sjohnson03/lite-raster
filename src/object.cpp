@@ -214,6 +214,19 @@ void Object::updateTransformedTriangles()
         C.position = rotateY(C.position, rotation.y);
         C.position = rotateZ(C.position, rotation.z);
 
+        // Rotate normals
+        A.normal = rotateX(A.normal, rotation.x);
+        A.normal = rotateY(A.normal, rotation.y);
+        A.normal = rotateZ(A.normal, rotation.z);
+
+        B.normal = rotateX(B.normal, rotation.x);
+        B.normal = rotateY(B.normal, rotation.y);
+        B.normal = rotateZ(B.normal, rotation.z);
+
+        C.normal = rotateX(C.normal, rotation.x);
+        C.normal = rotateY(C.normal, rotation.y);
+        C.normal = rotateZ(C.normal, rotation.z);
+
         // Translate
         A.position = A.position + transform;
         B.position = B.position + transform;
