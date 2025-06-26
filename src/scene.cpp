@@ -42,9 +42,12 @@ void Scene::render(int width, int height, Color *buffer)
 void Scene::rasterise(int width, int height, Color *buffer, std::vector<float> *zBuffer, Triangle3D *triangle3D, float3 objectPosition)
 {
     Light light;
-    light.position = float3(0.f, 2.f, -5.0f);
+    light.position = float3(0.f, 2.f, 1.0f);
     light.colour = Colour(255, 255, 255); // colour: white light
-    light.intensity = 1.5f;               // intensity
+    light.intensity = 1.f;                // intensity
+
+    // Rasterise
+    Triangle triangle = triangle3D->projectTo2D(width, height);
 
     float3 vertexColours[3];
 
@@ -52,9 +55,17 @@ void Scene::rasterise(int width, int height, Color *buffer, std::vector<float> *
     float3 worldPosB = triangle3D->B.position + objectPosition;
     float3 worldPosC = triangle3D->C.position + objectPosition;
 
-    Colour c0 = computeLighting(worldPosA, triangle3D->A.normal, cameraPosition, light);
-    Colour c1 = computeLighting(worldPosB, triangle3D->B.normal, cameraPosition, light);
-    Colour c2 = computeLighting(worldPosC, triangle3D->C.normal, cameraPosition, light);
+    float3 viewDirection = (cameraPosition - worldPosA).normalise();
+    float3 faceNormal = (worldPosB - worldPosA).cross(worldPosC - worldPosA);
+
+    if (faceNormal.dot(viewDirection) <= 0.0f)
+    { // triangle is facing away, no need to draw it
+        return;
+    }
+
+    Colour c0 = computeLighting(worldPosA, triangle3D->A.normal + faceNormal, cameraPosition, light);
+    Colour c1 = computeLighting(worldPosB, triangle3D->B.normal + faceNormal, cameraPosition, light);
+    Colour c2 = computeLighting(worldPosC, triangle3D->C.normal + faceNormal, cameraPosition, light);
 
     vertexColours[0] = float3(c0.r / 255.0f, c0.g / 255.0f, c0.b / 255.0f);
     vertexColours[1] = float3(c1.r / 255.0f, c1.g / 255.0f, c1.b / 255.0f);
@@ -63,9 +74,6 @@ void Scene::rasterise(int width, int height, Color *buffer, std::vector<float> *
     float z0 = triangle3D->A.position.z;
     float z1 = triangle3D->B.position.z;
     float z2 = triangle3D->C.position.z;
-
-    // Rasterise
-    Triangle triangle = triangle3D->projectTo2D(width, height);
 
     // draw where the triangle is
     auto [minX, maxX, minY, maxY] = triangle.getBoundingBox(width, height);
@@ -134,7 +142,7 @@ Colour Scene::computeLighting(const float3 &point, const float3 &normal, const f
     float3 reflectionDir = lightDirection - normal * 2.0f * normal.dot(lightDirection);
 
     // Ambient
-    float ambientStrength = 0.2f;
+    float ambientStrength = 0.3f;
     float3 ambient = lightColour * ambientStrength;
 
     // Diffuse
@@ -142,8 +150,8 @@ Colour Scene::computeLighting(const float3 &point, const float3 &normal, const f
     float3 diffuseColour = lightColour * diffuse * light.intensity;
 
     // Specular
-    float specStrength = 0.5f;
-    float shininess = 32.0f;
+    float specStrength = 1.f;
+    float shininess = 8.0f;
     float dotProduct = std::max(viewDirection.dot(reflectionDir), 0.0f);
     float spec = (dotProduct > 0.1f) ? std::pow(dotProduct, shininess) : 0.0f;
     float3 specular = lightColour * specStrength * spec;

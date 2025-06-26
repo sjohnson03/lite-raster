@@ -25,7 +25,7 @@ int main()
         float deltaTime = GetFrameTime(); // for more consistent movement independent of FPS
 
         // update scene
-        scene.addedObjects.at("suzanne")->addRotation(float3(0.0f, 50.0f * deltaTime, 0.0f));
+        scene.addedObjects.at("suzanne")->addRotation(float3(0.0f, 50 * deltaTime, 0.0f));
 
         scene.render(width, height, pixelBuffer);
 

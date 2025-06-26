@@ -215,17 +215,17 @@ void Object::updateTransformedTriangles()
         C.position = rotateZ(C.position, rotation.z);
 
         // Rotate normals
-        A.normal = rotateX(A.normal, rotation.x);
-        A.normal = rotateY(A.normal, rotation.y);
-        A.normal = rotateZ(A.normal, rotation.z);
+        A.normal = rotateX(A.normal, rotation.x).normalise();
+        A.normal = rotateY(A.normal, rotation.y).normalise();
+        A.normal = rotateZ(A.normal, rotation.z).normalise();
 
-        B.normal = rotateX(B.normal, rotation.x);
-        B.normal = rotateY(B.normal, rotation.y);
-        B.normal = rotateZ(B.normal, rotation.z);
+        B.normal = rotateX(B.normal, rotation.x).normalise();
+        B.normal = rotateY(B.normal, rotation.y).normalise();
+        B.normal = rotateZ(B.normal, rotation.z).normalise();
 
-        C.normal = rotateX(C.normal, rotation.x);
-        C.normal = rotateY(C.normal, rotation.y);
-        C.normal = rotateZ(C.normal, rotation.z);
+        C.normal = rotateX(C.normal, rotation.x).normalise();
+        C.normal = rotateY(C.normal, rotation.y).normalise();
+        C.normal = rotateZ(C.normal, rotation.z).normalise();
 
         // Translate
         A.position = A.position + transform;
