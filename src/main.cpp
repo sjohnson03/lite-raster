@@ -1,13 +1,21 @@
 #include "main.h"
 
-int main()
+int main(int argc, char *argv[])
 {
+    if (argc < 2)
+    {
+        std::cerr << "Usage: " << argv[0] << " <path-to-yaml-file>\n";
+        return 1;
+    }
+
     int width = 960;
     int height = 540;
     // screen space is from [-1, 1] for both width and height
     Scene scene;
 
-    loadSceneFromYAML("scene.yaml", scene);
+    const char *yamlFilePath = argv[1];
+
+    loadSceneFromYAML(yamlFilePath, scene);
 
     // Ray lib
     InitWindow(width, height, "LiteRaster");

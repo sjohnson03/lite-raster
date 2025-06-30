@@ -1,15 +1,15 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "types.h"
 #include "output.h"
-#include "triangle/triangle.h"
-#include "scene.h"
 #include "raylib.h"
+#include "scene.h"
+#include "triangle/triangle.h"
+#include "types.h"
 #include "yaml_processor.h"
-#include <vector>
 #include <chrono>
+#include <vector>
 
-int main();
+int main(int argc, char *argv[]);
 
 #endif
