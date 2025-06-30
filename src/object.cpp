@@ -1,269 +1,219 @@
 #include "object.h"
+#include "matrix.h"
+#include <fstream>
+#include <iostream>
+#include <sstream>
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-struct VertexIndex
-{
-    int vIdx;
-    int vtIdx;
-    int vnIdx;
+struct VertexIndex {
+  int vIdx;
+  int vtIdx;
+  int vnIdx;
 };
 
-Object::Object(std::string path)
-{
-    auto result = loadFromFile(path);
-    initFromVectors(result.first.first, result.first.second, result.second);
-    name = path;
+Object::Object(std::string path) {
+  auto result = loadFromFile(path);
+  initFromVectors(result.first.first, result.first.second, result.second);
+  name = path;
 
-    transform = float3(0.f, 0.f, 0.f);
-    rotation = float3(0.f, 0.f, 0.f);
-    scale = float3(1.0f, 1.0f, 1.0f);
+  transform = float3(0.f, 0.f, 0.f);
+  rotation = float3(0.f, 0.f, 0.f);
+  scale = float3(1.0f, 1.0f, 1.0f);
 }
 
-void Object::initFromVectors(const std::vector<float3> &points, const std::vector<float3> &normals, const std::vector<float3> &faces)
-{
-    for (unsigned long i = 0; i < faces.size(); i++)
-    {
-        Vertex v0 = points.at(faces[i].x);
-        Vertex v1 = points.at(faces[i].y);
-        Vertex v2 = points.at(faces[i].z);
+void Object::initFromVectors(const std::vector<float3> &points,
+                             const std::vector<float3> &normals,
+                             const std::vector<float3> &faces) {
+  for (unsigned long i = 0; i < faces.size(); i++) {
+    Vertex v0 = points.at(faces[i].x);
+    Vertex v1 = points.at(faces[i].y);
+    Vertex v2 = points.at(faces[i].z);
 
-        v0.normal = normals.at(faces[i].x);
-        v1.normal = normals.at(faces[i].y);
-        v2.normal = normals.at(faces[i].z);
+    v0.normal = normals.at(faces[i].x);
+    v1.normal = normals.at(faces[i].y);
+    v2.normal = normals.at(faces[i].z);
 
-        Triangle3D *tri = new Triangle3D(v0, v1, v2);
-        originalTriangles.push_back(tri);
+    Triangle3D *tri = new Triangle3D(v0, v1, v2);
+    originalTriangles.push_back(tri);
 
-        Triangle3D *cloned = new Triangle3D(v0, v1, v2);
-        cloned->colour = tri->colour;
-        triangles.push_back(cloned);
-    }
+    Triangle3D *cloned = new Triangle3D(v0, v1, v2);
+    cloned->colour = tri->colour;
+    triangles.push_back(cloned);
+  }
 }
 
-Object::~Object()
-{
-    for (auto tri : triangles)
-        delete tri;
+Object::~Object() {
+  for (auto tri : triangles)
+    delete tri;
 
-    for (auto tri : originalTriangles)
-        delete tri;
+  for (auto tri : originalTriangles)
+    delete tri;
 }
 
-std::pair<std::pair<std::vector<float3>, std::vector<float3>>, std::vector<float3>> Object::loadFromFile(std::string path)
-{
-    std::pair<std::pair<std::vector<float3>, std::vector<float3>>, std::vector<float3>> result;
+std::pair<std::pair<std::vector<float3>, std::vector<float3>>,
+          std::vector<float3>>
+Object::loadFromFile(std::string path) {
+  std::pair<std::pair<std::vector<float3>, std::vector<float3>>,
+            std::vector<float3>>
+      result;
 
-    std::ifstream file;
-    file.open(path);
-    if (file.is_open())
-    {
-        std::string line;
+  std::ifstream file;
+  file.open(path);
+  if (file.is_open()) {
+    std::string line;
 
-        while (std::getline(file, line))
-        {
-            if (line.rfind("vn ", 0) == 0) // if reading a vertex normal
-            {
-                std::stringstream ss(line);
-                std::string prefix;
-                float x, y, z;
-                ss >> prefix >> x >> y >> z;
-                result.first.second.push_back(float3{x, y, z});
-            }
-            else if (!line.empty() && line[0] == 'v') // if this is a vertex
-            {
-                std::stringstream ss(line);
-                char type;
-                float x, y, z;
-                ss >> type >> x >> y >> z;
-                result.first.first.push_back(float3{x, y, z});
-            }
-            else if (!line.empty() && line[0] == 'f') // if this a face
-            {
-                std::stringstream ss(line);
-                char type;
-                ss >> type;
-                std::vector<VertexIndex> faceVerts;
-                std::string vertex;
-                while (ss >> vertex)
-                {
-                    std::stringstream vs(vertex);
-                    std::string v, vt, vn;
-                    std::getline(vs, v, '/');
-                    std::getline(vs, vt, '/');
-                    std::getline(vs, vn, '/');
+    while (std::getline(file, line)) {
+      if (line.rfind("vn ", 0) == 0) // if reading a vertex normal
+      {
+        std::stringstream ss(line);
+        std::string prefix;
+        float x, y, z;
+        ss >> prefix >> x >> y >> z;
+        result.first.second.push_back(float3{x, y, z});
+      } else if (!line.empty() && line[0] == 'v') // if this is a vertex
+      {
+        std::stringstream ss(line);
+        char type;
+        float x, y, z;
+        ss >> type >> x >> y >> z;
+        result.first.first.push_back(float3{x, y, z});
+      } else if (!line.empty() && line[0] == 'f') // if this a face
+      {
+        std::stringstream ss(line);
+        char type;
+        ss >> type;
+        std::vector<VertexIndex> faceVerts;
+        std::string vertex;
+        while (ss >> vertex) {
+          std::stringstream vs(vertex);
+          std::string v, vt, vn;
+          std::getline(vs, v, '/');
+          std::getline(vs, vt, '/');
+          std::getline(vs, vn, '/');
 
-                    VertexIndex vi;
-                    vi.vIdx = std::stoi(v) - 1;
-                    vi.vtIdx = vt.empty() ? -1 : std::stoi(vt) - 1;
-                    vi.vnIdx = vn.empty() ? -1 : std::stoi(vn) - 1;
-                    faceVerts.push_back(vi);
-                }
-
-                // Store as float3 (assuming faces are triangles)
-                if (faceVerts.size() == 3)
-                {
-                    result.second.push_back(float3(
-                        static_cast<float>(faceVerts[0].vIdx),
-                        static_cast<float>(faceVerts[1].vIdx),
-                        static_cast<float>(faceVerts[2].vIdx)));
-                }
-            }
+          VertexIndex vi;
+          vi.vIdx = std::stoi(v) - 1;
+          vi.vtIdx = vt.empty() ? -1 : std::stoi(vt) - 1;
+          vi.vnIdx = vn.empty() ? -1 : std::stoi(vn) - 1;
+          faceVerts.push_back(vi);
         }
 
-        file.close();
+        // Store as float3 (assuming faces are triangles)
+        if (faceVerts.size() == 3) {
+          result.second.push_back(
+              float3(static_cast<float>(faceVerts[0].vIdx),
+                     static_cast<float>(faceVerts[1].vIdx),
+                     static_cast<float>(faceVerts[2].vIdx)));
+        }
+      }
     }
-    return result;
+
+    file.close();
+  }
+  return result;
 }
 
-void Object::setTransform(float3 position)
-{
-    transform = position;
+void Object::setTransform(float3 position) {
+  transform = position;
 
-    updateTransformedTriangles();
+  updateTransformedTriangles();
 }
 
-float3 Object::getTransform()
-{
-    return transform;
+float3 Object::getTransform() { return transform; }
+
+void Object::setRotation(float3 rotationDegrees) {
+  // convert rotation to radians
+  rotation = rotationDegrees * (M_PI / 180.0f);
+
+  updateTransformedTriangles();
 }
 
-void Object::setRotation(float3 rotationDegrees)
-{
-    // convert rotation to radians
-    rotation = rotationDegrees * (M_PI / 180.0f);
+void Object::addRotation(float3 rotationDegrees) {
+  rotation = rotation + (rotationDegrees * (M_PI / 180.0f));
 
-    updateTransformedTriangles();
+  updateTransformedTriangles();
 }
 
-void Object::addRotation(float3 rotationDegrees)
-{
-    rotation = rotation + (rotationDegrees * (M_PI / 180.0f));
+float3 Object::getRotation() { return rotation; }
 
-    updateTransformedTriangles();
+void Object::setScale(float3 scale) {
+  this->scale = scale;
+
+  updateTransformedTriangles();
 }
 
-float3 Object::getRotation()
-{
-    return rotation;
+float3 Object::getScale() { return scale; }
+
+void Object::setColour(uint8_t r, uint8_t g, uint8_t b) {
+  Colour c = Colour(r, g, b);
+
+  // set all triangles colour to this new colour
+  for (Triangle3D *tri : triangles)
+    tri->colour = c;
+
+  for (Triangle3D *origTriangle : originalTriangles)
+    origTriangle->colour = c;
+
+  this->colour = c;
 }
 
-void Object::setScale(float3 scale)
-{
-    this->scale = scale;
+Colour Object::getColour() { return colour; }
 
-    updateTransformedTriangles();
+void Object::updateTransformedTriangles() {
+  // Clear existing triangles
+  for (Triangle3D *tri : triangles)
+    delete tri;
+  triangles.clear();
+
+  // Create transformation matrix once
+  Matrix4x4 rotationMatrix =
+      createRotationMatrix(rotation.x, rotation.y, rotation.z);
+  Matrix4x4 scaleMatrix = createScaleMatrix(scale);
+  Matrix4x4 transformMatrix = rotationMatrix * scaleMatrix;
+
+  // For normals, use the inverse transpose of the upper 3x3 rotation matrix
+  Matrix3x3 normalMatrix = rotationMatrix.getUpper3x3().inverse().transpose();
+
+  for (Triangle3D *tri : originalTriangles) {
+    // Transform vertices
+    Vertex A = tri->A;
+    Vertex B = tri->B;
+    Vertex C = tri->C;
+
+    // Apply scale and rotation
+    A.position = transformMatrix * A.position;
+    B.position = transformMatrix * B.position;
+    C.position = transformMatrix * C.position;
+
+    // Transform normals (rotation only, no scale)
+    A.normal = (normalMatrix * A.normal).normalise();
+    B.normal = (normalMatrix * B.normal).normalise();
+    C.normal = (normalMatrix * C.normal).normalise();
+
+    // Apply translation
+    A.position = A.position + transform;
+    B.position = B.position + transform;
+    C.position = C.position + transform;
+
+    Triangle3D *newTri = new Triangle3D(A, B, C);
+    newTri->colour = tri->colour;
+    triangles.push_back(newTri);
+  }
 }
 
-float3 Object::getScale()
-{
-    return scale;
+float3 Object::rotateX(const float3 &v, float angle) {
+  float cosA = cos(angle);
+  float sinA = sin(angle);
+  return float3(v.x, v.y * cosA - v.z * sinA, v.y * sinA + v.z * cosA);
 }
 
-void Object::setColour(uint8_t r, uint8_t g, uint8_t b)
-{
-    Colour c = Colour(r, g, b);
-
-    // set all triangles colour to this new colour
-    for (Triangle3D *tri : triangles)
-        tri->colour = c;
-
-    for (Triangle3D *origTriangle : originalTriangles)
-        origTriangle->colour = c;
-
-    this->colour = c;
+float3 Object::rotateY(const float3 &v, float angle) {
+  float cosA = cos(angle);
+  float sinA = sin(angle);
+  return float3(v.x * cosA + v.z * sinA, v.y, -v.x * sinA + v.z * cosA);
 }
 
-Colour Object::getColour()
-{
-    return colour;
-}
-
-void Object::updateTransformedTriangles()
-{
-
-    for (Triangle3D *tri : triangles)
-        delete tri;
-
-    triangles.clear();
-
-    for (Triangle3D *tri : originalTriangles)
-    {
-        // Clone triangle vertices
-        Vertex A = tri->A;
-        Vertex B = tri->B;
-        Vertex C = tri->C;
-
-        // Scale
-        A.position = A.position * scale;
-        B.position = B.position * scale;
-        C.position = C.position * scale;
-
-        // Rotate (around origin)
-        A.position = rotateX(A.position, rotation.x);
-        A.position = rotateY(A.position, rotation.y);
-        A.position = rotateZ(A.position, rotation.z);
-
-        B.position = rotateX(B.position, rotation.x);
-        B.position = rotateY(B.position, rotation.y);
-        B.position = rotateZ(B.position, rotation.z);
-
-        C.position = rotateX(C.position, rotation.x);
-        C.position = rotateY(C.position, rotation.y);
-        C.position = rotateZ(C.position, rotation.z);
-
-        // Rotate normals
-        A.normal = rotateX(A.normal, rotation.x).normalise();
-        A.normal = rotateY(A.normal, rotation.y).normalise();
-        A.normal = rotateZ(A.normal, rotation.z).normalise();
-
-        B.normal = rotateX(B.normal, rotation.x).normalise();
-        B.normal = rotateY(B.normal, rotation.y).normalise();
-        B.normal = rotateZ(B.normal, rotation.z).normalise();
-
-        C.normal = rotateX(C.normal, rotation.x).normalise();
-        C.normal = rotateY(C.normal, rotation.y).normalise();
-        C.normal = rotateZ(C.normal, rotation.z).normalise();
-
-        // Translate
-        A.position = A.position + transform;
-        B.position = B.position + transform;
-        C.position = C.position + transform;
-
-        Triangle3D *newTri = new Triangle3D(A, B, C);
-        newTri->colour = tri->colour;
-        triangles.push_back(newTri);
-    }
-}
-
-float3 Object::rotateX(const float3 &v, float angle)
-{
-    float cosA = cos(angle);
-    float sinA = sin(angle);
-    return float3(
-        v.x,
-        v.y * cosA - v.z * sinA,
-        v.y * sinA + v.z * cosA);
-}
-
-float3 Object::rotateY(const float3 &v, float angle)
-{
-    float cosA = cos(angle);
-    float sinA = sin(angle);
-    return float3(
-        v.x * cosA + v.z * sinA,
-        v.y,
-        -v.x * sinA + v.z * cosA);
-}
-
-float3 Object::rotateZ(const float3 &v, float angle)
-{
-    float cosA = cos(angle);
-    float sinA = sin(angle);
-    return float3(
-        v.x * cosA - v.y * sinA,
-        v.x * sinA + v.y * cosA,
-        v.z);
+float3 Object::rotateZ(const float3 &v, float angle) {
+  float cosA = cos(angle);
+  float sinA = sin(angle);
+  return float3(v.x * cosA - v.y * sinA, v.x * sinA + v.y * cosA, v.z);
 }

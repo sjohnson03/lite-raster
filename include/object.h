@@ -1,54 +1,53 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
-#include "types.h"
-#include "triangle/triangle.h"
 #include "triangle/triangle3D.h"
-#include <vector>
+#include "types.h"
 #include <math.h>
-#include <iostream>
-#include <fstream>
-#include <sstream>
+#include <vector>
 
-class Object
-{
+class Object {
 public:
-    Object(std::string path); // create from file
-    ~Object();
+  Object(std::string path); // create from file
+  ~Object();
 
-    void initFromVectors(const std::vector<float3> &points, const std::vector<float3> &normals, const std::vector<float3> &faces);
+  void initFromVectors(const std::vector<float3> &points,
+                       const std::vector<float3> &normals,
+                       const std::vector<float3> &faces);
 
-    static std::pair<std::pair<std::vector<float3>, std::vector<float3>>, std::vector<float3>> loadFromFile(std::string file); // vertices and faces
+  static std::pair<std::pair<std::vector<float3>, std::vector<float3>>,
+                   std::vector<float3>>
+  loadFromFile(std::string file); // vertices and faces
 
-    std::vector<Triangle3D *> triangles;
-    std::string name = "Object";
+  std::vector<Triangle3D *> triangles;
+  std::string name = "Object";
 
-    void setTransform(float3 position);
-    float3 getTransform();
+  void setTransform(float3 position);
+  float3 getTransform();
 
-    void setRotation(float3 rotationDegrees);
-    void addRotation(float3);
-    float3 getRotation();
+  void setRotation(float3 rotationDegrees);
+  void addRotation(float3);
+  float3 getRotation();
 
-    void setScale(float3 scale);
-    float3 getScale();
+  void setScale(float3 scale);
+  float3 getScale();
 
-    void setColour(uint8_t r, uint8_t g, uint8_t b);
-    Colour getColour();
+  void setColour(uint8_t r, uint8_t g, uint8_t b);
+  Colour getColour();
 
-    void updateTransformedTriangles();
+  void updateTransformedTriangles();
 
 private:
-    float3 transform;
-    float3 rotation;
-    float3 scale;
-    Colour colour;
+  float3 transform;
+  float3 rotation;
+  float3 scale;
+  Colour colour;
 
-    std::vector<Triangle3D *> originalTriangles;
+  std::vector<Triangle3D *> originalTriangles;
 
-    float3 rotateX(const float3 &v, float angle);
-    float3 rotateY(const float3 &v, float angle);
-    float3 rotateZ(const float3 &v, float angle);
+  float3 rotateX(const float3 &v, float angle);
+  float3 rotateY(const float3 &v, float angle);
+  float3 rotateZ(const float3 &v, float angle);
 };
 
 #endif
