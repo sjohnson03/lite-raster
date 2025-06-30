@@ -39,16 +39,14 @@ endif()
 # Output binary directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
-# Include directories
-include_directories(
-    include
-)
-
 # Source files
 file(GLOB_RECURSE SRC_FILES src/*.cpp)
 
 # Add executable
 add_executable(literaster ${SRC_FILES})
+
+# Include directories
+target_include_directories(literaster PRIVATE ${CMAKE_SOURCE_DIR}/include)
 
 # Link raylib and required system libraries (Linux-specific)
 target_link_libraries(literaster
