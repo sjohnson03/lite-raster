@@ -6,18 +6,30 @@
 #include <math.h>
 #include <vector>
 
+struct VertexIndex {
+  int vIdx;
+  int vtIdx;
+  int vnIdx;
+};
+
+struct FaceInfo {
+  VertexIndex faceInfo[3];
+};
+
+struct ShapeInformation {
+  std::vector<float3> points;
+  std::vector<float3> normals;
+  std::vector<FaceInfo> faces;
+};
+
 class Object {
 public:
   Object(std::string path); // create from file
   ~Object();
 
-  void initFromVectors(const std::vector<float3> &points,
-                       const std::vector<float3> &normals,
-                       const std::vector<float3> &faces);
+  void initFromVectors(ShapeInformation);
 
-  static std::pair<std::pair<std::vector<float3>, std::vector<float3>>,
-                   std::vector<float3>>
-  loadFromFile(std::string file); // vertices and faces
+  static ShapeInformation loadFromFile(std::string file); // vertices and faces
 
   std::vector<Triangle3D *> triangles;
   std::string name = "Object";

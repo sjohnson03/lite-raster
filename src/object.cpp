@@ -1,18 +1,14 @@
 #include "object.h"
 #include "matrix.h"
+#include "types.h"
 #include <fstream>
 #include <iostream>
 #include <sstream>
-
-struct VertexIndex {
-  int vIdx;
-  int vtIdx;
-  int vnIdx;
-};
+#include <vector>
 
 Object::Object(std::string path) {
   auto result = loadFromFile(path);
-  initFromVectors(result.first.first, result.first.second, result.second);
+  initFromVectors(result);
   name = path;
 
   transform = float3(0.f, 0.f, 0.f);
@@ -20,17 +16,20 @@ Object::Object(std::string path) {
   scale = float3(1.0f, 1.0f, 1.0f);
 }
 
-void Object::initFromVectors(const std::vector<float3> &points,
-                             const std::vector<float3> &normals,
-                             const std::vector<float3> &faces) {
-  for (unsigned long i = 0; i < faces.size(); i++) {
-    Vertex v0 = points.at(faces[i].x);
-    Vertex v1 = points.at(faces[i].y);
-    Vertex v2 = points.at(faces[i].z);
+void Object::initFromVectors(ShapeInformation shapeInfo) {
 
-    v0.normal = normals.at(faces[i].x);
-    v1.normal = normals.at(faces[i].y);
-    v2.normal = normals.at(faces[i].z);
+  std::vector<float3> points = shapeInfo.points;
+  std::vector<float3> normals = shapeInfo.normals;
+  std::vector<FaceInfo> faces = shapeInfo.faces;
+
+  for (unsigned long i = 0; i < faces.size(); i++) {
+    Vertex v0 = points.at(faces[i].faceInfo[0].vIdx);
+    Vertex v1 = points.at(faces[i].faceInfo[1].vIdx);
+    Vertex v2 = points.at(faces[i].faceInfo[2].vIdx);
+
+    v0.normal = normals.at(faces[i].faceInfo[0].vnIdx);
+    v1.normal = normals.at(faces[i].faceInfo[1].vnIdx);
+    v2.normal = normals.at(faces[i].faceInfo[2].vnIdx);
 
     Triangle3D *tri = new Triangle3D(v0, v1, v2);
     originalTriangles.push_back(tri);
@@ -49,12 +48,8 @@ Object::~Object() {
     delete tri;
 }
 
-std::pair<std::pair<std::vector<float3>, std::vector<float3>>,
-          std::vector<float3>>
-Object::loadFromFile(std::string path) {
-  std::pair<std::pair<std::vector<float3>, std::vector<float3>>,
-            std::vector<float3>>
-      result;
+ShapeInformation Object::loadFromFile(std::string path) {
+  ShapeInformation result;
 
   std::ifstream file;
   file.open(path);
@@ -68,14 +63,14 @@ Object::loadFromFile(std::string path) {
         std::string prefix;
         float x, y, z;
         ss >> prefix >> x >> y >> z;
-        result.first.second.push_back(float3{x, y, z});
+        result.normals.push_back(float3{x, y, z});
       } else if (!line.empty() && line[0] == 'v') // if this is a vertex
       {
         std::stringstream ss(line);
         char type;
         float x, y, z;
         ss >> type >> x >> y >> z;
-        result.first.first.push_back(float3{x, y, z});
+        result.points.push_back(float3{x, y, z});
       } else if (!line.empty() && line[0] == 'f') // if this a face
       {
         std::stringstream ss(line);
@@ -97,12 +92,14 @@ Object::loadFromFile(std::string path) {
           faceVerts.push_back(vi);
         }
 
-        // Store as float3 (assuming faces are triangles)
+        // Store face information
         if (faceVerts.size() == 3) {
-          result.second.push_back(
-              float3(static_cast<float>(faceVerts[0].vIdx),
-                     static_cast<float>(faceVerts[1].vIdx),
-                     static_cast<float>(faceVerts[2].vIdx)));
+          FaceInfo faceInfo;
+          faceInfo.faceInfo[0] = faceVerts[0];
+          faceInfo.faceInfo[1] = faceVerts[1];
+          faceInfo.faceInfo[2] = faceVerts[2];
+
+          result.faces.push_back(faceInfo);
         }
       }
     }
