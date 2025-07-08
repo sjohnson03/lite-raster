@@ -5,6 +5,18 @@ object:
     rotation: [0.0, 0.0, 0.0]
     scale: [0.5, 0.5, 0.5]
 
+  - name: "cube"
+    file: "objects/cube.obj"
+    position: [4.0, 0.0, -4.5]
+    rotation: [0.0, 0.0, 0.0]
+    scale: [0.5, 0.5, 0.5]
+
+  - name: "cube2"
+    file: "objects/cube.obj"
+    position: [-4.0, 0.0, -4.5]
+    rotation: [0.0, 0.0, 0.0]
+    scale: [0.5, 0.5, 0.5]
+
 light:
   - name: "main_light"
     position: [0, 0, -2]
