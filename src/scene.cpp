@@ -1,4 +1,5 @@
 #include "scene.h"
+#include <utility>
 
 Scene::Scene() { cameraPosition = float3(0.0f, 0.0f, 0.0f); }
 
@@ -36,10 +37,6 @@ void Scene::render(int width, int height, Color *buffer) {
 void Scene::rasterise(int width, int height, Color *buffer,
                       std::vector<float> *zBuffer, Triangle3D *triangle3D,
                       float3 objectPosition) {
-  Light light;
-  light.position = float3(0.0f, 0.0f, -2.f);
-  light.colour = Colour(255, 255, 255); // colour: white light
-  light.intensity = 0.8f;               // intensity
 
   // Convert from 3D to 2D
   Triangle triangle = triangle3D->projectTo2D(width, height);
@@ -58,12 +55,16 @@ void Scene::rasterise(int width, int height, Color *buffer,
     return;
   }
 
-  Colour c0 =
-      computeLighting(worldPosA, triangle3D->A.normal, cameraPosition, light);
-  Colour c1 =
-      computeLighting(worldPosB, triangle3D->B.normal, cameraPosition, light);
-  Colour c2 =
-      computeLighting(worldPosC, triangle3D->C.normal, cameraPosition, light);
+  Colour c0(0, 0, 0), c1(0, 0, 0), c2(0, 0, 0);
+
+  for (Light *light : lights) {
+    c0 += computeLighting(worldPosA, triangle3D->A.normal, cameraPosition,
+                          *light);
+    c1 += computeLighting(worldPosB, triangle3D->B.normal, cameraPosition,
+                          *light);
+    c2 += computeLighting(worldPosC, triangle3D->C.normal, cameraPosition,
+                          *light);
+  }
 
   vertexColours[0] = float3(c0.r / 255.0f, c0.g / 255.0f, c0.b / 255.0f);
   vertexColours[1] = float3(c1.r / 255.0f, c1.g / 255.0f, c1.b / 255.0f);
@@ -143,8 +144,7 @@ Colour Scene::computeLighting(const float3 &point, const float3 &normal,
   lightDirection = lightDirection / lightDistance;
 
   // Ambient
-  float ambientStrength = 0.1f;
-  float3 ambient = lightColour * ambientStrength;
+  float3 ambient = lightColour * light.ambient;
 
   // Diffuse
   float diffuseIntensity = std::max(normal.dot(lightDirection), 0.0f);
@@ -179,6 +179,11 @@ Colour Scene::computeLighting(const float3 &point, const float3 &normal,
 void Scene::add(Object &object, float3 position) {
   objects.push_back(std::make_pair(&object, position));
   addedObjects[object.name] = &object;
+}
+
+void Scene::add(Light &light) {
+  lights.push_back(&light);
+  addedLights[light.name] = &light;
 }
 
 void Scene::addTri(Triangle &triangle, float3 position) {

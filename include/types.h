@@ -101,6 +101,17 @@ struct Colour {
     };
     return Colour(clamp(r * other.r), clamp(g * other.g), clamp(b * other.b));
   }
+
+  Colour &operator+=(const Colour &other) {
+    auto clamp = [](int value) {
+      return static_cast<uint8_t>(value > 255 ? 255 : value);
+    };
+    r = clamp(r + other.r);
+    g = clamp(g + other.g);
+    b = clamp(b + other.b);
+    a = clamp(a + other.a);
+    return *this;
+  }
 };
 
 struct Pixel {
