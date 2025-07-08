@@ -3,15 +3,16 @@
 
 #include "types.h"
 
-class Screen
-{
+class Screen {
 public:
-    // Converts from NDC (-1 to 1) to screen space (0 to width/height)
-    static float2 toScreenSpace(const float3 &vertex, int width, int height);
-    static float2 project(int width, int height, const float3 &point, float focalLength = 1.0f);
+  // Converts from NDC (-1 to 1) to screen space (0 to width/height)
+  static float2 toScreenSpace(const float3 &vertex, int width, int height);
+  static float2 project(int width, int height, const float3 &point,
+                        float focalLength = 1.0f);
+  static float3 toWorldSpace(int width, int height, const float2 &screenPoint);
 
 private:
-    float focalLength = 1.0f;
+  float focalLength = 1.0f;
 };
 
 #endif
