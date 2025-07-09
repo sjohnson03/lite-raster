@@ -1,7 +1,7 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-#include "stb_image.h"
+#include "external/stb_image.h"
 #include "types.h"
 #include <string>
 
