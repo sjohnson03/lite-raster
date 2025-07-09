@@ -4,6 +4,7 @@
 #include "light.h"
 #include "object.h"
 #include "raylib.h"
+#include "texture.h"
 #include "triangle/triangle.h"
 #include "types.h"
 #include <map>
@@ -40,7 +41,7 @@ private:
   // rasterisers a given triangle onto the screen
   void rasterise(int width, int height, Color *buffer,
                  std::vector<float> *zBuffer, Triangle3D *triangle3D,
-                 float3 objectPosition);
+                 float3 objectPosition, LiteRaster::Texture *texture);
 };
 
 #endif

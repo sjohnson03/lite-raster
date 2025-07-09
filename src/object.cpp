@@ -14,6 +14,7 @@ Object::Object(std::string path) {
   transform = float3(0.f, 0.f, 0.f);
   rotation = float3(0.f, 0.f, 0.f);
   scale = float3(1.0f, 1.0f, 1.0f);
+  texture = nullptr;
 }
 
 void Object::initFromVectors(ShapeInformation shapeInfo) {
@@ -64,6 +65,12 @@ ShapeInformation Object::loadFromFile(std::string path) {
         float x, y, z;
         ss >> prefix >> x >> y >> z;
         result.normals.push_back(float3{x, y, z});
+      } else if (line.rfind("vt ", 0) == 0) { // if reading texture coordinates
+        std::stringstream ss(line);
+        std::string prefix;
+        float x, y;
+        ss >> prefix >> x >> y;
+        result.textureCoordinates.push_back(float2(x, y));
       } else if (!line.empty() && line[0] == 'v') // if this is a vertex
       {
         std::stringstream ss(line);

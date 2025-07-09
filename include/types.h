@@ -16,6 +16,10 @@ struct float2 {
     return float2(x + other.x, y + other.y);
   };
 
+  float2 operator*(const float value) const {
+    return float2(x * value, y * value);
+  }
+
   float dot(const float2 &other) const { return x * other.x + y * other.y; };
 
   float2 operator/(float value) const { return float2(x / value, y / value); };

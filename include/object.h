@@ -1,6 +1,7 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
+#include "texture.h"
 #include "triangle/triangle3D.h"
 #include "types.h"
 #include <math.h>
@@ -19,11 +20,14 @@ struct FaceInfo {
 struct ShapeInformation {
   std::vector<float3> points;
   std::vector<float3> normals;
+  std::vector<float2> textureCoordinates;
   std::vector<FaceInfo> faces;
 };
 
 class Object {
 public:
+  LiteRaster::Texture *texture;
+
   Object(std::string path); // create from file
   ~Object();
 

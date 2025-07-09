@@ -1,4 +1,5 @@
 #include "scene.h"
+#include "texture.h"
 #include <utility>
 
 Scene::Scene() { cameraPosition = float3(0.0f, 0.0f, 0.0f); }
@@ -28,7 +29,7 @@ void Scene::render(int width, int height, Color *buffer) {
 
       for (unsigned long j = 0; j < object->triangles.size(); j++) {
         rasterise(width, height, buffer, &zBuffer, object->triangles[j],
-                  object->getTransform());
+                  object->getTransform(), object->texture);
       }
     }
   }
@@ -36,7 +37,7 @@ void Scene::render(int width, int height, Color *buffer) {
 
 void Scene::rasterise(int width, int height, Color *buffer,
                       std::vector<float> *zBuffer, Triangle3D *triangle3D,
-                      float3 objectPosition) {
+                      float3 objectPosition, LiteRaster::Texture *texture) {
 
   // Convert from 3D to 2D
   Triangle triangle = triangle3D->projectTo2D(width, height);
@@ -95,6 +96,26 @@ void Scene::rasterise(int width, int height, Color *buffer,
         float z0 = triangle3D->A.position.z + objectPosition.z;
         float z1 = triangle3D->B.position.z + objectPosition.z;
         float z2 = triangle3D->C.position.z + objectPosition.z;
+
+        if (texture != nullptr) {
+          // UV for texture mapping
+          float2 uv = triangle3D->A.uv * triangle.alpha +
+                      triangle3D->B.uv * triangle.beta +
+                      triangle3D->C.uv * triangle.gamma;
+
+          float2 uv0 = triangle3D->A.uv * z0;
+          float2 uv1 = triangle3D->B.uv * z1;
+          float2 uv2 = triangle3D->C.uv * z2;
+
+          // Interpolate
+          float wInterp =
+              triangle.alpha * z0 + triangle.beta * z1 + triangle.gamma * z2;
+          float2 uvInterp = (uv0 * triangle.alpha + uv1 * triangle.beta +
+                             uv2 * triangle.gamma) /
+                            wInterp;
+
+          Colour texColor = texture->sample(uvInterp.x, uvInterp.y);
+        }
 
         float w0 = triangle.alpha / z0;
         float w1 = triangle.beta / z1;
