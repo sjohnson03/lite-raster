@@ -26,8 +26,6 @@ struct ShapeInformation {
 
 class Object {
 public:
-  LiteRaster::Texture *texture;
-
   Object(std::string path); // create from file
   ~Object();
 
@@ -51,6 +49,9 @@ public:
   void setColour(uint8_t r, uint8_t g, uint8_t b);
   Colour getColour();
 
+  void setTexture(const std::string &fileName);
+  LiteRaster::Texture *getTexture();
+
   void updateTransformedTriangles();
 
 private:
@@ -58,6 +59,7 @@ private:
   float3 rotation;
   float3 scale;
   Colour colour;
+  LiteRaster::Texture *texture;
 
   std::vector<Triangle3D *> originalTriangles;
 

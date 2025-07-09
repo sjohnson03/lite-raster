@@ -1,5 +1,6 @@
 #include "object.h"
 #include "matrix.h"
+#include "texture.h"
 #include "types.h"
 #include <fstream>
 #include <iostream>
@@ -22,15 +23,21 @@ void Object::initFromVectors(ShapeInformation shapeInfo) {
   std::vector<float3> points = shapeInfo.points;
   std::vector<float3> normals = shapeInfo.normals;
   std::vector<FaceInfo> faces = shapeInfo.faces;
+  std::vector<float2> uvs = shapeInfo.textureCoordinates;
 
   for (unsigned long i = 0; i < faces.size(); i++) {
-    Vertex v0 = points.at(faces[i].faceInfo[0].vIdx);
-    Vertex v1 = points.at(faces[i].faceInfo[1].vIdx);
-    Vertex v2 = points.at(faces[i].faceInfo[2].vIdx);
+    FaceInfo face = faces[i];
+    Vertex v0 = points.at(face.faceInfo[0].vIdx);
+    Vertex v1 = points.at(face.faceInfo[1].vIdx);
+    Vertex v2 = points.at(face.faceInfo[2].vIdx);
 
-    v0.normal = normals.at(faces[i].faceInfo[0].vnIdx);
-    v1.normal = normals.at(faces[i].faceInfo[1].vnIdx);
-    v2.normal = normals.at(faces[i].faceInfo[2].vnIdx);
+    v0.normal = normals.at(face.faceInfo[0].vnIdx);
+    v1.normal = normals.at(face.faceInfo[1].vnIdx);
+    v2.normal = normals.at(face.faceInfo[2].vnIdx);
+
+    v0.uv = uvs.at(face.faceInfo[0].vtIdx);
+    v1.uv = uvs.at(face.faceInfo[1].vtIdx);
+    v2.uv = uvs.at(face.faceInfo[2].vtIdx);
 
     Triangle3D *tri = new Triangle3D(v0, v1, v2);
     originalTriangles.push_back(tri);
@@ -161,6 +168,12 @@ void Object::setColour(uint8_t r, uint8_t g, uint8_t b) {
 }
 
 Colour Object::getColour() { return colour; }
+
+void Object::setTexture(const std::string &fileName) {
+  this->texture = new LiteRaster::Texture(fileName);
+}
+
+LiteRaster::Texture *Object::getTexture() { return texture; }
 
 void Object::updateTransformedTriangles() {
   // Clear existing triangles

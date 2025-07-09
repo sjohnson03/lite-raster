@@ -1,5 +1,6 @@
 #include "scene.h"
 #include "texture.h"
+#include <algorithm>
 #include <utility>
 
 Scene::Scene() { cameraPosition = float3(0.0f, 0.0f, 0.0f); }
@@ -29,7 +30,7 @@ void Scene::render(int width, int height, Color *buffer) {
 
       for (unsigned long j = 0; j < object->triangles.size(); j++) {
         rasterise(width, height, buffer, &zBuffer, object->triangles[j],
-                  object->getTransform(), object->texture);
+                  object->getTransform(), object->getTexture());
       }
     }
   }
@@ -97,24 +98,40 @@ void Scene::rasterise(int width, int height, Color *buffer,
         float z1 = triangle3D->B.position.z + objectPosition.z;
         float z2 = triangle3D->C.position.z + objectPosition.z;
 
+        float3 triangleColour;
         if (texture != nullptr) {
           // UV for texture mapping
-          float2 uv = triangle3D->A.uv * triangle.alpha +
-                      triangle3D->B.uv * triangle.beta +
-                      triangle3D->C.uv * triangle.gamma;
+          float iz0 = 1.0f / z0;
+          float iz1 = 1.0f / z1;
+          float iz2 = 1.0f / z2;
 
-          float2 uv0 = triangle3D->A.uv * z0;
-          float2 uv1 = triangle3D->B.uv * z1;
-          float2 uv2 = triangle3D->C.uv * z2;
+          float2 u0 = triangle3D->A.uv * iz0;
+          float2 u1 = triangle3D->B.uv * iz1;
+          float2 u2 = triangle3D->C.uv * iz2;
 
-          // Interpolate
-          float wInterp =
-              triangle.alpha * z0 + triangle.beta * z1 + triangle.gamma * z2;
-          float2 uvInterp = (uv0 * triangle.alpha + uv1 * triangle.beta +
-                             uv2 * triangle.gamma) /
-                            wInterp;
+          float denom =
+              triangle.alpha * iz0 + triangle.beta * iz1 + triangle.gamma * iz2;
+          float2 uvInterp =
+              (u0 * triangle.alpha + u1 * triangle.beta + u2 * triangle.gamma) /
+              denom;
 
-          Colour texColor = texture->sample(uvInterp.x, uvInterp.y);
+          // Flip Y for stb
+          uvInterp.y = 1.0f - uvInterp.y;
+
+          // Clamp
+          uvInterp.x = std::clamp(uvInterp.x, 0.0f, 1.0f);
+          uvInterp.y = std::clamp(uvInterp.y, 0.0f, 1.0f);
+
+          // Color texColour = {0, (unsigned char)(uvInterp.y * 255), 0, 255};
+
+          Colour texColour = texture->sample(uvInterp.x, uvInterp.y);
+          triangleColour = float3(texColour.r / 255.0f, texColour.g / 255.0f,
+                                  texColour.b / 255.0f);
+
+        } else {
+          triangleColour = float3(triangle.getColour().r / 255.0f,
+                                  triangle.getColour().g / 255.0f,
+                                  triangle.getColour().b / 255.0f);
         }
 
         float w0 = triangle.alpha / z0;
@@ -131,11 +148,7 @@ void Scene::rasterise(int width, int height, Color *buffer,
             vertexColours[1] * w1 + // Vertex B lighting * beta
             vertexColours[2] * w2;  // Vertex C lighting * gamma
 
-        float3 triColNorm(triangle.getColour().r / 255.0f,
-                          triangle.getColour().g / 255.0f,
-                          triangle.getColour().b / 255.0f);
-
-        float3 c = triColNorm * interpolatedLight;
+        float3 c = triangleColour * interpolatedLight;
 
         // 2D triangle colours are stored as values from 0 - 1. Convert this to
         // be 0 - 255
