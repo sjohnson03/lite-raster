@@ -79,6 +79,19 @@ void Scene::rasterise(int width, int height, Color *buffer,
                     triangle.getColour().g / 255.0f,
                     triangle.getColour().b / 255.0f);
 
+  // Convert to perspective-correct weights
+  float z0 = triangle3D->A.position.z + objectPosition.z;
+  float z1 = triangle3D->B.position.z + objectPosition.z;
+  float z2 = triangle3D->C.position.z + objectPosition.z;
+
+  // UV for texture mapping
+  float iz0 = 1.0f / z0;
+  float iz1 = 1.0f / z1;
+  float iz2 = 1.0f / z2;
+  float2 u0 = triangle3D->A.uv * iz0;
+  float2 u1 = triangle3D->B.uv * iz1;
+  float2 u2 = triangle3D->C.uv * iz2;
+
   for (int y = minY; y <= maxY; ++y) {
     for (int x = minX; x <= maxX; ++x) {
       float2 point = float2(x, y);
@@ -86,29 +99,13 @@ void Scene::rasterise(int width, int height, Color *buffer,
         triangle.calculateBarycentricCoordinates(point);
 
         float depth = triangle.getDepth();
-        if (depth >
-            zBuffer->at(y * width +
-                        x)) // there is a closer pixel, do not draw over it
+        int index = y * width + x;
+        if (depth > (*zBuffer)[index])
           continue;
-
-        (*zBuffer)[y * width + x] = depth;
-
-        // Convert to perspective-correct weights
-        float z0 = triangle3D->A.position.z + objectPosition.z;
-        float z1 = triangle3D->B.position.z + objectPosition.z;
-        float z2 = triangle3D->C.position.z + objectPosition.z;
+        (*zBuffer)[index] = depth;
 
         float3 triangleColour;
         if (texture != nullptr) {
-          // UV for texture mapping
-          float iz0 = 1.0f / z0;
-          float iz1 = 1.0f / z1;
-          float iz2 = 1.0f / z2;
-
-          float2 u0 = triangle3D->A.uv * iz0;
-          float2 u1 = triangle3D->B.uv * iz1;
-          float2 u2 = triangle3D->C.uv * iz2;
-
           float denom =
               triangle.alpha * iz0 + triangle.beta * iz1 + triangle.gamma * iz2;
           float2 uvInterp =
@@ -117,12 +114,6 @@ void Scene::rasterise(int width, int height, Color *buffer,
 
           // Flip Y for stb
           uvInterp.y = 1.0f - uvInterp.y;
-
-          // Clamp
-          uvInterp.x = std::clamp(uvInterp.x, 0.0f, 1.0f);
-          uvInterp.y = std::clamp(uvInterp.y, 0.0f, 1.0f);
-
-          // Color texColour = {0, (unsigned char)(uvInterp.y * 255), 0, 255};
 
           Colour texColour = texture->sample(uvInterp.x, uvInterp.y);
           triangleColour = float3(texColour.r / 255.0f, texColour.g / 255.0f,
@@ -200,12 +191,9 @@ Colour Scene::computeLighting(const float3 &point, const float3 &normal,
 
   float3 finalColour = diffuseColour + ambient + specular;
 
-  auto clamp = [](float v, float lo, float hi) {
-    return v < lo ? lo : (v > hi ? hi : v);
-  };
-  finalColour.x = clamp(finalColour.x, 0.0f, 1.0f);
-  finalColour.y = clamp(finalColour.y, 0.0f, 1.0f);
-  finalColour.z = clamp(finalColour.z, 0.0f, 1.0f);
+  finalColour.x = std::clamp(finalColour.x, 0.0f, 1.0f);
+  finalColour.y = std::clamp(finalColour.y, 0.0f, 1.0f);
+  finalColour.z = std::clamp(finalColour.z, 0.0f, 1.0f);
 
   return Colour(finalColour.x * 255, finalColour.y * 255, finalColour.z * 255);
 }

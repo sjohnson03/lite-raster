@@ -23,10 +23,6 @@ int main(int argc, char *argv[]) {
       new Color[width * height]; // stores data about all pixels in the scene
   Texture2D texture = LoadRenderTexture(width, height).texture;
 
-  auto *suzanneObj = scene.addedObjects.at("suzanne");
-  suzanneObj->setTexture("textures/suzanne.png");
-  suzanneObj->setColour(235, 171, 52); // add a custom colour
-
   while (!WindowShouldClose()) {
     auto start = std::chrono::high_resolution_clock::now();
     float deltaTime =

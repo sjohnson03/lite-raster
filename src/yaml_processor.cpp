@@ -24,6 +24,18 @@ void loadSceneFromYAML(const std::string &filename, Scene &scene) {
           float3(scl[0].as<float>(), scl[1].as<float>(), scl[2].as<float>()));
       obj->name = name;
 
+      if (node["texture"]) {
+        std::string textureFile = node["texture"].as<std::string>();
+        if (!textureFile.empty()) {
+          obj->setTexture(textureFile);
+        }
+      }
+      if (node["color"]) {
+        auto col = node["color"];
+        obj->setColour(col[0].as<uint8_t>(), col[1].as<uint8_t>(),
+                       col[2].as<uint8_t>());
+      }
+
       scene.add(*obj);
     }
   }

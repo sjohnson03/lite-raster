@@ -15,6 +15,7 @@ Object::Object(std::string path) {
   transform = float3(0.f, 0.f, 0.f);
   rotation = float3(0.f, 0.f, 0.f);
   scale = float3(1.0f, 1.0f, 1.0f);
+  colour = Colour(255, 255, 255);
   texture = nullptr;
 }
 
