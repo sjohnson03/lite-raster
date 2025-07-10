@@ -102,6 +102,7 @@ void Scene::rasterise(int width, int height, Color *buffer,
       float2 point = float2(x, y);
       if (triangle.isPointInsideTriangle(point)) {
         float depth = triangle.getDepth();
+        
         int index = y * width + x;
         if (depth > (*zBuffer)[index])
           continue;
