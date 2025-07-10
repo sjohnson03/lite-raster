@@ -1,20 +1,20 @@
 object:
   - name: "suzanne"
-    file: "objects/suzanne.obj"
+    file: "examples/objects/suzanne.obj"
     position: [0.0, 0.0, -1.5]
     rotation: [0.0, 0.0, 0.0]
     scale: [0.5, 0.5, 0.5]
-    texture: "textures/diffuse.png"
+    texture: "examples/textures/diffuse.png"
 
   - name: "cube"
-    file: "objects/cube.obj"
+    file: "examples/objects/cube.obj"
     position: [4.0, 0.0, -4.5]
     rotation: [0.0, 0.0, 0.0]
     scale: [0.5, 0.5, 0.5]
     color: [255, 0, 0]
 
   - name: "cube2"
-    file: "objects/cube.obj"
+    file: "examples/objects/cube.obj"
     position: [-4.0, 0.0, -4.5]
     rotation: [0.0, 0.0, 0.0]
     scale: [0.5, 0.5, 0.5]

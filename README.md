@@ -5,9 +5,10 @@
 ## Features
 
 - Fast and minimal rasterization core
-- Support for basic geometric primitives
+- Support for custom models
 - Simple transformation and colour handling
-- Standalone usage - no integration required
+- Texture mapping for custom models
+- Phong lighting system
 
 ## Building
 
@@ -31,29 +32,16 @@ This will generate the executable binaries in the `bin/` directory.
 
 ## Usage
 
-To use **lite-raster**, define your scene in the `scene.yaml` file located in the project root. The application reads this file to render the specified scene.
+To use **lite-raster**, define your scene in a `.yaml` file (see [scene.yaml](examples/scene.yaml) for examples). All objects and textures must be referenced by their full path from the root.
 
-The binary must be called from the project root to ensure that `scene.yaml` is loaded correctly.
-
-Assuming a structure like:
+Literaster can then be run with the scene passed as an argument.
 
 ```bash
-lite-raster/
-├── bin/
-│   └── lite-raster # built binary
-├── build/
-│   └── ...
-├── include/
-│   └── ...
-├── objects/
-├── src/
-├── scene.yaml     # YAML scene file
-└── CMakeLists.txt
+./bin/lite-raster examples/scene.yaml
 ```
-The program can be run from the project root with:
-```bash
-./bin/lite-raster
-```
+
+Example should then display:
+![Example Scene](images/example_scene.png)
 
 ## License
 
