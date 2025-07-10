@@ -101,13 +101,12 @@ void Scene::rasterise(int width, int height, Color *buffer,
     for (int x = minX; x <= maxX; ++x) {
       float2 point = float2(x, y);
       if (triangle.isPointInsideTriangle(point)) {
-        triangle.calculateBarycentricCoordinates(point);
-
         float depth = triangle.getDepth();
         int index = y * width + x;
         if (depth > (*zBuffer)[index])
           continue;
         (*zBuffer)[index] = depth;
+        triangle.calculateBarycentricCoordinates(point);
 
         float3 triangleColour;
         if (texture != nullptr) {
