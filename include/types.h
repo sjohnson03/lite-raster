@@ -72,7 +72,7 @@ struct float3 {
 
   float3 normalise() const {
     float length = sqrt(x * x + y * y + z * z);
-    if (length == 0)
+    if (length < 1e-6f)
       return float3(0, 0, 0);
     return float3(x / length, y / length, z / length);
   }
