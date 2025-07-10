@@ -202,7 +202,7 @@ void Object::updateTransformedTriangles() {
     B.position = transformMatrix * B.position;
     C.position = transformMatrix * C.position;
 
-    // Transform normals (rotation only, no scale)
+    // Transform normals (rotation only)
     A.normal = (normalMatrix * A.normal).normalise();
     B.normal = (normalMatrix * B.normal).normalise();
     C.normal = (normalMatrix * C.normal).normalise();

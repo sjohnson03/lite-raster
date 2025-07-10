@@ -49,6 +49,11 @@ void Scene::rasterise(int width, int height, Color *buffer,
   float3 worldPosB = triangle3D->B.position + objectPosition;
   float3 worldPosC = triangle3D->C.position + objectPosition;
 
+  // if any vertex is behind the camera, do not draw this face
+  if (worldPosA.z > cameraPosition.z || worldPosB.z > cameraPosition.z ||
+      worldPosC.z > cameraPosition.z)
+    return;
+
   float3 viewDirection = (cameraPosition - worldPosA).normalise();
   float3 faceNormal = (worldPosB - worldPosA).cross(worldPosC - worldPosA);
 
