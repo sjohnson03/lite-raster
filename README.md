@@ -41,6 +41,7 @@ Literaster can then be run with the scene passed as an argument.
 ```
 
 Example should then display:
+
 ![Example Scene](images/example_scene.png)
 
 ## License
